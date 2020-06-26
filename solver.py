@@ -123,19 +123,25 @@ for team in range(teams):
         home_vars = [xs[day][team][t] for t in range(teams) if t != team]
         solver.Add(ys[team][day] >= solver.Sum(home_vars))
 
-# Encode yas as away bools
 for team in range(teams):
     for day in range(days):
-        away_vars = [xs[day][t][team] for t in range(teams) if t != team]
-        solver.Add(yas[team][day] >= solver.Sum(away_vars))
+        home_vars = [xs[day][team][t] for t in range(teams) if t != team]
+        solver.Add(ys[t][team] <= 1 - solver.Sum(home_vars))
+
+# Encode yas as away bools
+# for team in range(teams):
+#     for day in range(days):
+#         away_vars = [xs[day][t][team] for t in range(teams) if t != team]
+#         solver.Add(yas[team][day] >= solver.Sum(away_vars))
 
 # Encode travel costs
 for team in range(teams):
     for day in range(1, days):
         solver.Add(zs[team][day] >= 0)
-        # solver.Add(zs[team][day] >= ys[team][day] - ys[team][day-1])
-        solver.Add(zs[team][day] >= 1 - (ys[team][day] - yas[team][day-1]))
-        solver.Add(zs[team][day] >= 1 - (yas[team][day] - ys[team][day-1]))
+        solver.Add(zs[team][day] >= ys[team][day] - ys[team][day-1])
+        # solver.Add(zs[team][day] >= 1 - (ys[team][day] - yas[team][day-1]))
+        # solver.Add(zs[team][day] >= 1 - (yas[team][day] - ys[team][day-1]))
+
 
 # Team cost
 for team in range(teams):
