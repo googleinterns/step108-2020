@@ -45,7 +45,7 @@ def make_vals_and_labels(read_encoded = None, read_unencoded = None, write_encod
             dataset = _encode_player_in_game_dataset(season_start = season_start, season_end = season_end, write_encoded = write_encoded, write_unencoded = write_unencoded)
 
     labels = np.array(dataset['label'])
-    values = ml_record.drop(['label'], axis = 1)
+    values = dataset.drop(['label'], axis = 1)
     feature_list = list(values.columns)
     values = np.array(values)
 
@@ -106,20 +106,21 @@ def _encode_player_in_game_dataset(read_unencoded = None, write_encoded = None, 
     encoded_data = pd.DataFrame(columns=cols, index=range(raw_dataset.shape[0]))
     for row in raw_dataset.itertuples():
 
-        #label is 1 for a home win, and home players have a 1 / away players have a -1
+        #label is 1 for a home win, and winning players = home players so winning = 1 and losing = -1
         if row.winning_team_id == row.home_team_id:
-            for player in row.winning_team_players:
-                encoded_data.at[row.Index, condensed_name(player)] = 1
-            for player in row.losing_team_players:
-                encoded_data.at[row.Index, condensed_name(player)] = -1
+            winning_team_val = 1
+            losing_team_val = -1
             encoded_data.at[row.Index, "label"] = 1
-        #label is 0 for an away win, home players again have 1 / away players -1
+        #label is 0 for an away win, winning players = away players so winning = -1 and losing = 1
         else:
-            for player in row.winning_team_players:
-                encoded_data.at[row.Index, condensed_name(player)] = -1
-            for player in row.losing_team_players:
-                encoded_data.at[row.Index, condensed_name(player)] = 1
+            winning_team_val = -1
+            losing_team_val = 1
             encoded_data.at[row.Index, "label"] = 0
+
+        for player in row.winning_team_players:
+            encoded_data.at[row.Index,condensed_name(player)] = winning_team_val
+        for player in row.losing_team_players:
+            encoded_data.at[row.Index, condensed_name(player)] = losing_team_val
     #the places where we didn't put a 1 or a -1 are NaN by default, so we fill with 0s
     encoded_data = encoded_data.fillna(0)
     if write_encoded: #if they want the encoded data written, encode it
@@ -157,14 +158,26 @@ def _generate_player_in_game_dataset(season_start, season_end, write_unencoded =
 
     for year in range(season_start,season_end+1):
         #get all games in a season, then unpack the dataframe
-        gamelog_for_season = _try_to_get("gamelog", year)
+        gamelog_for_season = None
+        iter = 1
+        while gamelog_for_season == None:
+            if iter > 1:
+                print(f"trying to get {year} season for iteration #{iter}")
+            gamelog_for_season = _try_to_get("gamelog", year)
+            iter += 1
         gamelog_df = gamelog_for_season.get_data_frames()[0]
 
         for row in gamelog_df.itertuples():
             if row.WL == "W": #only want the winning team so we don't duplicate games
 
                 #unpack the return item to get the dataframe we want
-                bx = _try_to_get("boxscore", row.GAME_ID)
+                iter = 1
+                bx = None
+                while bx == None:
+                    if iter > 1:
+                        print(f"trying to get game {row.GAME_ID} for iteration #{iter}")
+                    bx = _try_to_get("boxscore", row.GAME_ID)
+                    iter += 1
                 individual_boxscore = bx.get_data_frames()[0]
                 players_dict = _map_team_to_players(individual_boxscore)
 
@@ -209,7 +222,11 @@ def _try_to_get(endpoint, parameter, max_retries = 5, timeout = 10):
             break
         except:
             pass
-    return ret
+    try:
+        return ret
+    except:
+        print(f"timed out fetching endpoint {endpoint} with parameter {parameter}")
+        return None
 
 def _map_team_to_players(boxscore, min = 3):
     """Given a boxscore for a game, makes a dict mapping teams -> players who

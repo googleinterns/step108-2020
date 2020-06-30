@@ -3,7 +3,8 @@ from get_data import condensed_name
 
 def eval_accuracy(model, X_test, y_test):
     """
-    Quick method that uses sklearn's metrics module to evaluate the accuracy fo the mdoel in relation to a given test set
+    Quick method that uses sklearn's metrics module to evaluate the accuracy
+    for the model in relation to a given test set
     """
     y_pred = lr.predict(X_test)
     # Model Accuracy, how often is the classifier correct?
