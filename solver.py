@@ -1,4 +1,5 @@
 from __future__ import print_function
+import numpy as np
 from ortools.linear_solver import pywraplp
 import csv
 import sys
@@ -29,6 +30,10 @@ teams = 30
 days = 177
 weeks = (days + 6) // 7
 week_len = 7
+
+# teams = 7
+# days = (teams-2)*7
+
 xs = [[[None for team2 in range(teams)] for team1 in range(teams)] for i in range(days)]
 for day in range(days):
     for team1 in range(teams):
@@ -60,8 +65,8 @@ for team1 in range(teams):
             if team1 != team2:
                 home_vars.append(xs[day][team1][team2])
                 away_vars.append(xs[day][team2][team1])
-    solver.Add(solver.Sum(home_vars) == 41)
-    solver.Add(solver.Sum(away_vars) == 41)
+    solver.Add(solver.Sum(home_vars) == teams-1)
+    solver.Add(solver.Sum(away_vars) == teams-1)
 
 # one game per day
 for team1 in range(teams):
@@ -96,12 +101,12 @@ for team1 in range(teams):
                 else:
                     other_conf_vars[team2].append(team2_var)
     for t in div_vars:
-        solver.Add(solver.Sum(div_vars[t]) == 2)
+        solver.Add(solver.Sum(div_vars[t]) == 2) # 4 games against same-division teams
     for t in conf_vars_home:
-        solver.Add(solver.Sum(conf_vars_home[t]) <= 2)
-        solver.Add(solver.Sum(conf_vars_home[t]) + solver.Sum(conf_vars_away[t]) >= 3)
+        solver.Add(solver.Sum(conf_vars_home[t]) <= 2) # 4 games against 6 same-conference teams
+        solver.Add(solver.Sum(conf_vars_home[t]) + solver.Sum(conf_vars_away[t]) >= 3) # 3 games against the remaining same-conference teams
     for t in other_conf_vars:
-        solver.Add(solver.Sum(other_conf_vars[t]) == 1)
+        solver.Add(solver.Sum(other_conf_vars[t]) == 1) # 2 games against the other-conference teams
 
 
 infinity = solver.infinity()
@@ -109,38 +114,30 @@ v = solver.Var(0, infinity, False, "v")
 ws = [None for team in range(teams)]
 zs = [[None for day in range(days)] for team in range(teams)]
 ys = [[None for day in range(days)] for team in range(teams)]
-yas = [[None for day in range(days)] for team in range(teams)]
 for team in range(teams):
     ws[team] = solver.Var(0, infinity, False, f"w_{team}")
     for day in range(days):
         zs[team][day] = solver.Var(0, infinity, False, f"z_{team}_{day}")
         ys[team][day] = solver.BoolVar(f"y_{team}_{day}")
-        yas[team][day] = solver.BoolVar(f"ya_{team}_{day}")
 
 # Encode ys as home bools
+# y = 0 when home
 for team in range(teams):
     for day in range(days):
         home_vars = [xs[day][team][t] for t in range(teams) if t != team]
         solver.Add(ys[team][day] >= solver.Sum(home_vars))
 
+# y = 1 when away
 for team in range(teams):
     for day in range(days):
-        home_vars = [xs[day][team][t] for t in range(teams) if t != team]
-        solver.Add(ys[t][team] <= 1 - solver.Sum(home_vars))
+        away_vars = [xs[day][t][team] for t in range(teams) if t != team]
+        solver.Add(ys[team][day] <= 1 - solver.Sum(away_vars))
 
-# Encode yas as away bools
-# for team in range(teams):
-#     for day in range(days):
-#         away_vars = [xs[day][t][team] for t in range(teams) if t != team]
-#         solver.Add(yas[team][day] >= solver.Sum(away_vars))
-
-# Encode travel costs
+# Encode travel costs (home <-> away -> +1 cost)
 for team in range(teams):
     for day in range(1, days):
         solver.Add(zs[team][day] >= 0)
         solver.Add(zs[team][day] >= ys[team][day] - ys[team][day-1])
-        # solver.Add(zs[team][day] >= 1 - (ys[team][day] - yas[team][day-1]))
-        # solver.Add(zs[team][day] >= 1 - (yas[team][day] - ys[team][day-1]))
 
 
 # Team cost
@@ -151,27 +148,17 @@ for team in range(teams):
 solver.Add(v >= solver.Sum(ws))
 
 print('Number of constraints =', solver.NumConstraints())
-# [END constraints]
 
-# [START objective]
-# Maximize x + 10 * y.
-# solver.Maximize(x + 10 * y)
-# print(np.asarray(xs).flatten())
-# all_x = np.asarray(xs).flatten()
-# obj_expr = [1 * x for x in all_x if x is not None]
-# solver.Maximize(solver.Sum(obj_expr))
 solver.Minimize(v)
-# [END objective]
 
-# [START solve]
 status = solver.Solve()
-# [END solve]
 
-# [START print_solution]
 if status == pywraplp.Solver.OPTIMAL:
     print('Solution:')
     print('Objective value =', solver.Objective().Value())
-    # print(f'Number of matches: {sum(x.solution_value() for x in all_x if x is not None)}')
+    print(f'Number of matches: {sum(x.solution_value() for x in np.asarray(xs).flatten() if x is not None)}')
+
+    # Debugging
     # for team in range(teams):
     #     for week in range(0, days, week_len):
     #         s = 0
@@ -183,6 +170,12 @@ if status == pywraplp.Solver.OPTIMAL:
     # for x in all_x:
     #     if x is not None and x.solution_value() == 1.0:
     #         print(f'{x} = {x.solution_value()}')
+    # for team in range(teams):
+    #     for day in range(days):
+    #         if ys[team][day].solution_value() != 0:
+    #             print(f'{ys[team][day]} = {ys[team][day].solution_value()}')
+
+    # If provided in the command-line, write the schedule to a csv file
     try:
         with open(sys.argv[1], "w", newline='') as f:
             writer = csv.writer(f)
@@ -198,13 +191,8 @@ if status == pywraplp.Solver.OPTIMAL:
 
 else:
     print('The problem does not have an optimal solution.')
-# [END print_solution]
 
-# [START advanced]
 print('\nAdvanced usage:')
 print('Problem solved in %f milliseconds' % solver.wall_time())
 print('Problem solved in %d iterations' % solver.iterations())
 print('Problem solved in %d branch-and-bound nodes' % solver.nodes())
-# [END advanced]
-
-# [END program]
