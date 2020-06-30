@@ -1,4 +1,4 @@
-//package com.google.sps.servlets;
+package com.google.sps.servlets;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -21,7 +21,7 @@ public class PlayerInfoServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("text/html");
         String fileName = "players.csv";
-        File file = new File(url.getPath());
+        File file = new File(fileName);
         try{
             Scanner inputStream = new Scanner(file);
             while(inputStream.hasNext()){
