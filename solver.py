@@ -38,9 +38,8 @@ xs = [[[None for team2 in range(teams)] for team1 in range(teams)] for i in rang
 for day in range(days):
     for team1 in range(teams):
         for team2 in range(teams):
-            if team1 == team2:
-                continue
-            xs[day][team1][team2] = solver.BoolVar(f_var(day, team1, team2))
+            if team1 != team2:
+                xs[day][team1][team2] = solver.BoolVar(f_var(day, team1, team2))
 
 
 print('Number of variables =', solver.NumVariables())
@@ -101,12 +100,16 @@ for team1 in range(teams):
                 else:
                     other_conf_vars[team2].append(team2_var)
     for t in div_vars:
-        solver.Add(solver.Sum(div_vars[t]) == 2) # 4 games against same-division teams
+        # 4 games against same-division teams
+        solver.Add(solver.Sum(div_vars[t]) == 2)
     for t in conf_vars_home:
-        solver.Add(solver.Sum(conf_vars_home[t]) <= 2) # 4 games against 6 same-conference teams
-        solver.Add(solver.Sum(conf_vars_home[t]) + solver.Sum(conf_vars_away[t]) >= 3) # 3 games against the remaining same-conference teams
+        # 4 games against 6 same-conference teams
+        solver.Add(solver.Sum(conf_vars_home[t]) <= 2)
+        # 3 games against the remaining same-conference teams
+        solver.Add(solver.Sum(conf_vars_home[t]) + solver.Sum(conf_vars_away[t]) >= 3)
     for t in other_conf_vars:
-        solver.Add(solver.Sum(other_conf_vars[t]) == 1) # 2 games against the other-conference teams
+        # 2 games against the other-conference teams
+        solver.Add(solver.Sum(other_conf_vars[t]) == 1)
 
 
 infinity = solver.infinity()
