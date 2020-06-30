@@ -1,25 +1,9 @@
-# Reads in a csv schedule and verifies NBA scheduling rules
-
 import csv
+import sys
+import unittest
+import os
 
-
-# Handles test output
-class TestDecorator:
-    def __init__(self):
-        self.decorated = []
-
-    def __call__(self, func):
-        def new(*args):
-            try:
-                func(*args)
-                print(f"***{func.__doc__}***")
-            except AssertionError:
-                print(f"---{func.__doc__}---")
-
-        self.decorated.append(new)
-        return new
-
-Test = TestDecorator()
+from mip import *
 
 
 class Match:
@@ -42,129 +26,133 @@ def team_to_conference(team):
     return team // NUM_IN_CONFERENCE
 
 
-def main():
-    file_name = "schedule.csv"
-    rows = []
-    teams = 0
-    days = 0
+try:
+    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), sys.argv.pop())
+    print(file_name)
+except:
+    print(f"usage: python {__file__} relative_path_to_schedule")
+    exit(1)
 
-    with open(file_name, "r") as f:
-        reader = csv.reader(f)
-        keys = reader.__next__()
-        for row in reader:
-            row = list(map(int, row))
-            teams = max(teams, row[1], row[2])
-            rows.append(row)
-            days = max(days, row[0])
+rows = []
+teams = 0
+days = 0
 
-    # Convert from 0-index to count
-    teams += 1
-    days += 1
+with open(file_name, "r") as f:
+    reader = csv.reader(f)
+    keys = reader.__next__()
+    for row in reader:
+        row = list(map(int, row))
+        teams = max(teams, row[1], row[2])
+        rows.append(row)
+        days = max(days, row[0])
 
-    team_d = {team: [] for team in range(teams)}
-    for row in rows:
-        day = row[0]
-        home_team = row[1]
-        away_team = row[2]
-        m = Match(day, home_team, away_team)
-        team_d[home_team].append(m)
-        team_d[away_team].append(m)
+# Convert from 0-index to count
+teams += 1
+days += 1
 
-    # BEGIN TESTS
-    for test in Test.decorated:
-        test(teams, days, team_d)
+team_d = {team: list() for team in range(teams)}
+for row in rows:
+    day = row[0]
+    home_team = row[1]
+    away_team = row[2]
+    m = Match(day, home_team, away_team)
+    team_d[home_team].append(m)
+    team_d[away_team].append(m)
 
 
-@Test
-def weekLimit(teams, days, team_d):
-    """Team plays at most 4 matches / week"""
-    for team in team_d:
-        week_cnt = 0
-        for day in range(days):
+class AssignmentConstraints(unittest.TestCase):
+
+    def testWeekLimit(self):
+        """Team plays at most 4 matches / week"""
+        for team in team_d:
+            week_cnt = 0
+            for day in range(days):
+                for match in team_d[team]:
+                    if match.day == day:
+                        week_cnt += 1
+                if day % 7 == 6:
+                    assert week_cnt <= 4, "Team plays at most 4 matches / week"
+                    week_cnt = 0
+
+    def testDayLimit(self):
+        """Team plays at most one match / day"""
+        for team in team_d:
+            for day in range(days):
+                day_cnt = 0
+                for match in team_d[team]:
+                    if match.day == day:
+                        day_cnt += 1
+                assert day_cnt <= 1, "Team plays at most one match / day"
+
+    def testHomeAway(self):
+        """Team plays 41 home and 41 away games"""
+        
+        for team in team_d:
+            home_cnt = 0
+            away_cnt = 0
             for match in team_d[team]:
-                if match.day == day:
-                    week_cnt += 1
-            if day % 7 == 6:
-                assert week_cnt <= 4
-                week_cnt = 0
+                if match.home_team == team:
+                    home_cnt += 1
+                else:
+                    away_cnt += 1
+            assert home_cnt == 41, "Team plays 41 home games"
+            assert away_cnt == 41, "Team plays 41 away games"
 
-@Test
-def dayLimit(teams, days, team_d):
-    """Team plays at most one match / day"""
-    for team in team_d:
-        for day in range(days):
-            day_cnt = 0
+    def testDivMatches(self):
+        """Team plays 4 matches against division"""
+        
+        for team in team_d:
+            teams_in_div = [t for t in range(teams) if t != team and team_to_division(t) == team_to_division(team)]
+            teams_cnt = {t: 0 for t in teams_in_div}
             for match in team_d[team]:
-                if match.day == day:
-                    day_cnt += 1
-            assert day_cnt <= 1
+                if match.home_team in teams_in_div:
+                    teams_cnt[match.home_team] += 1
+                elif match.away_team in teams_in_div:
+                    teams_cnt[match.away_team] += 1
+            assert all(cnt == 4 for cnt in teams_cnt.values()), "Team plays 4 matches against division"
 
-@Test
-def homeAway(teams, days, team_d):
-    """Team plays 41 home and 41 away games"""
-    for team in team_d:
-        home_cnt = 0
-        away_cnt = 0
-        for match in team_d[team]:
-            if match.home_team == team:
-                home_cnt += 1
-            else:
-                away_cnt += 1
-        assert home_cnt == 41
-        assert away_cnt == 41
+    def testOtherConfMatches(self):
+        """Team plays exactly 2 matches against teams in the other conference"""
+        
+        for team in team_d:
+            teams_in_conf = [t for t in range(teams) if team_to_conference(t) != team_to_conference(team)]
+            teams_cnt = {t: 0 for t in teams_in_conf}
+            for match in team_d[team]:
+                if match.home_team in teams_in_conf:
+                    teams_cnt[match.home_team] += 1
+                elif match.away_team in teams_in_conf:
+                    teams_cnt[match.away_team] += 1
+            assert all(cnt == 2 for cnt in teams_cnt.values()), "Team plays exactly 2 matches against teams in the other conference"
 
-@Test
-def divMatches(teams, days, team_d):
-    """Team plays 4 matches against division"""
-    for team in team_d:
-        teams_in_div = [t for t in range(teams) if t != team and team_to_division(t) == team_to_division(team)]
-        teams_cnt = {t: 0 for t in teams_in_div}
-        for match in team_d[team]:
-            if match.home_team in teams_in_div:
-                teams_cnt[match.home_team] += 1
-            elif match.away_team in teams_in_div:
-                teams_cnt[match.away_team] += 1
-        assert all(cnt == 4 for cnt in teams_cnt.values())
+    def testSameConfMatches4(self):
+        """Team plays 4 matches against 6 teams in conference (outside of division)"""
+        
+        for team in team_d:
+            teams_in_conf = [t for t in range(teams) if
+                             team_to_conference(t) == team_to_conference(team) and team_to_division(
+                                 t) != team_to_division(team)]
+            teams_cnt = {t: 0 for t in teams_in_conf}
+            for match in team_d[team]:
+                if match.home_team in teams_in_conf:
+                    teams_cnt[match.home_team] += 1
+                elif match.away_team in teams_in_conf:
+                    teams_cnt[match.away_team] += 1
+            assert sum(cnt == 4 for cnt in teams_cnt.values()) == 6, "Team plays 4 matches against 6 teams in conference (outside of division)"
 
-@Test
-def otherConfMatches(teams, days, team_d):
-    """Team plays exactly 1 match against teams in the other conference"""
-    for team in team_d:
-        teams_in_conf = [t for t in range(teams) if team_to_conference(t) != team_to_conference(team)]
-        teams_cnt = {t: 0 for t in teams_in_conf}
-        for match in team_d[team]:
-            if match.home_team in teams_in_conf:
-                teams_cnt[match.home_team] += 1
-            elif match.away_team in teams_in_conf:
-                teams_cnt[match.away_team] += 1
-        assert all(cnt == 1 for cnt in teams_cnt.values())
-
-@Test
-def sameConfMatches4(teams, days, team_d):
-    """Team plays 4 matches against 6 teams in conference (outside of division)"""
-    for team in team_d:
-        teams_in_conf = [t for t in range(teams) if team_to_conference(t) == team_to_conference(team) and team_to_division(t) != team_to_division(team)]
-        teams_cnt = {t: 0 for t in teams_in_conf}
-        for match in team_d[team]:
-            if match.home_team in teams_in_conf:
-                teams_cnt[match.home_team] += 1
-            elif match.away_team in teams_in_conf:
-                teams_cnt[match.away_team] += 1
-        assert sum(cnt == 4 for cnt in teams_cnt.values()) == 6
-
-@Test
-def sameConfMatches3(teams, days, team_d):
-    """Team plays 3 matches against 4 teams in conference (outside of division)"""
-    for team in team_d:
-        teams_in_conf = [t for t in range(teams) if t != team and team_to_conference(t) == team_to_conference(team) and team_to_division(t) != team_to_division(team)]
-        teams_cnt = {t: 0 for t in teams_in_conf}
-        for match in team_d[team]:
-            if match.home_team in teams_in_conf:
-                teams_cnt[match.home_team] += 1
-            elif match.away_team in teams_in_conf:
-                teams_cnt[match.away_team] += 1
-        assert sum(cnt == 3 for cnt in teams_cnt.values()) == 4
-
+    def testSameConfMatches3(self):
+        """Team plays 3 matches against 4 teams in conference (outside of division)"""
+        
+        for team in team_d:
+            teams_in_conf = [t for t in range(teams) if
+                             t != team and team_to_conference(t) == team_to_conference(team) and team_to_division(
+                                 t) != team_to_division(team)]
+            teams_cnt = {t: 0 for t in teams_in_conf}
+            for match in team_d[team]:
+                if match.home_team in teams_in_conf:
+                    teams_cnt[match.home_team] += 1
+                elif match.away_team in teams_in_conf:
+                    teams_cnt[match.away_team] += 1
+            assert sum(cnt == 3 for cnt in teams_cnt.values()) == 4, "Team plays 3 matches against 4 teams in conference (outside of division)"
 
 if __name__ == "__main__":
-    main()
+    unittest.main()
