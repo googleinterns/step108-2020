@@ -64,8 +64,8 @@ for team1 in range(teams):
             if team1 != team2:
                 home_vars.append(xs[day][team1][team2])
                 away_vars.append(xs[day][team2][team1])
-    solver.Add(solver.Sum(home_vars) == teams-1)
-    solver.Add(solver.Sum(away_vars) == teams-1)
+    solver.Add(solver.Sum(home_vars) == 41)
+    solver.Add(solver.Sum(away_vars) == 41)
 
 # one game per day
 for team1 in range(teams):
