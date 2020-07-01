@@ -17,6 +17,8 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/playerInfo")
 public class PlayerInfoServlet extends HttpServlet {
 
+
+    //reads in csv file of players and prints it in the servlet
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("text/html");
