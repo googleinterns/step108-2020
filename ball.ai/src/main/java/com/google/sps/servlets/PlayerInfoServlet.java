@@ -1,13 +1,8 @@
 package com.google.sps.servlets;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Scanner;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.FileInputStream;
-import java.util.List;
-import java.net.URL;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -22,17 +17,24 @@ public class PlayerInfoServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("text/html");
-        String fileName = "players.csv";
-        File file = new File(fileName);
+        BufferedReader br = null;
         try{
-            Scanner inputStream = new Scanner(file);
-            while(inputStream.hasNext()){
-                String data = inputStream.next();
-                response.getWriter().println(data);
+            br = new BufferedReader(new FileReader("players.csv"));
+            String contentLine = br.readLine();
+            while(contentLine != null){
+                response.getWriter().println(contentLine);
+                contentLine = br.readLine();
             }
-            inputStream.close();
-        } catch (FileNotFoundException e){
+        } catch (IOException e){
             e.printStackTrace();
+        } finally {
+            try{
+                if(br != null){
+                    br.close();
+                }
+            }catch (IOException ex){
+                ex.printStackTrace();
+            }
         }
         
     }
