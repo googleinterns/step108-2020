@@ -1,10 +1,10 @@
-package main.java.com.google.sps.data;
+package com.google.sps.data;
 
-public class PlayerInfo {
+public class Player {
     private String first_name, last_name;
     private int points,rebounds,steals;
 
-    public PlayerInfo(String first_name, String last_name, int points, int rebounds, int steals){
+    public Player(String first_name, String last_name, int points, int rebounds, int steals){
         this.first_name = first_name;
         this.last_name = last_name;
         this.points = points;
