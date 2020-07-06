@@ -1,2 +1,2 @@
-main/java/com/google/sps/data/PlayerInfo.class
+com/google/sps/data/Player.class
 com/google/sps/servlets/PlayerInfoServlet.class
