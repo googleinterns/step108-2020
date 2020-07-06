@@ -1,2 +1,4 @@
-main/java/com/google/sps/data/PlayerInfo.class
 com/google/sps/servlets/PlayerInfoServlet.class
+com/google/sps/servlets/KHotModelServlet.class
+main/java/com/google/sps/data/PlayerInfo.class
+com/google/sps/servlets/KHotModelServlet$1.class
