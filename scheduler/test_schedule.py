@@ -3,8 +3,6 @@ import sys
 import unittest
 import os
 
-from mip import *
-
 
 class Match:
     def __init__(self, day, home_team, away_team):
@@ -21,12 +19,14 @@ NUM_IN_DIVISION = 5
 def team_to_division(team):
     return team // NUM_IN_DIVISION
 
+
 NUM_IN_CONFERENCE = 15
 def team_to_conference(team):
     return team // NUM_IN_CONFERENCE
 
 
 try:
+    # Avoids argv errors with unittest
     file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), sys.argv.pop())
     print(file_name)
 except:
@@ -86,7 +86,7 @@ class AssignmentConstraints(unittest.TestCase):
 
     def testHomeAway(self):
         """Team plays 41 home and 41 away games"""
-        
+
         for team in team_d:
             home_cnt = 0
             away_cnt = 0
@@ -100,7 +100,7 @@ class AssignmentConstraints(unittest.TestCase):
 
     def testDivMatches(self):
         """Team plays 4 matches against division"""
-        
+
         for team in team_d:
             teams_in_div = [t for t in range(teams) if t != team and team_to_division(t) == team_to_division(team)]
             teams_cnt = {t: 0 for t in teams_in_div}
@@ -113,7 +113,7 @@ class AssignmentConstraints(unittest.TestCase):
 
     def testOtherConfMatches(self):
         """Team plays exactly 2 matches against teams in the other conference"""
-        
+
         for team in team_d:
             teams_in_conf = [t for t in range(teams) if team_to_conference(t) != team_to_conference(team)]
             teams_cnt = {t: 0 for t in teams_in_conf}
@@ -122,11 +122,12 @@ class AssignmentConstraints(unittest.TestCase):
                     teams_cnt[match.home_team] += 1
                 elif match.away_team in teams_in_conf:
                     teams_cnt[match.away_team] += 1
-            assert all(cnt == 2 for cnt in teams_cnt.values()), "Team plays exactly 2 matches against teams in the other conference"
+            assert all(cnt == 2 for cnt in
+                       teams_cnt.values()), "Team plays exactly 2 matches against teams in the other conference"
 
     def testSameConfMatches4(self):
         """Team plays 4 matches against 6 teams in conference (outside of division)"""
-        
+
         for team in team_d:
             teams_in_conf = [t for t in range(teams) if
                              team_to_conference(t) == team_to_conference(team) and team_to_division(
@@ -137,11 +138,12 @@ class AssignmentConstraints(unittest.TestCase):
                     teams_cnt[match.home_team] += 1
                 elif match.away_team in teams_in_conf:
                     teams_cnt[match.away_team] += 1
-            assert sum(cnt == 4 for cnt in teams_cnt.values()) == 6, "Team plays 4 matches against 6 teams in conference (outside of division)"
+            assert sum(cnt == 4 for cnt in
+                       teams_cnt.values()) == 6, "Team plays 4 matches against 6 teams in conference (outside of division)"
 
     def testSameConfMatches3(self):
         """Team plays 3 matches against 4 teams in conference (outside of division)"""
-        
+
         for team in team_d:
             teams_in_conf = [t for t in range(teams) if
                              t != team and team_to_conference(t) == team_to_conference(team) and team_to_division(
@@ -152,7 +154,9 @@ class AssignmentConstraints(unittest.TestCase):
                     teams_cnt[match.home_team] += 1
                 elif match.away_team in teams_in_conf:
                     teams_cnt[match.away_team] += 1
-            assert sum(cnt == 3 for cnt in teams_cnt.values()) == 4, "Team plays 3 matches against 4 teams in conference (outside of division)"
+            assert sum(cnt == 3 for cnt in
+                       teams_cnt.values()) == 4, "Team plays 3 matches against 4 teams in conference (outside of division)"
+
 
 if __name__ == "__main__":
     unittest.main()
