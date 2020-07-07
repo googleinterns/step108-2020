@@ -9,6 +9,10 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.*;
+
 import com.google.gson.Gson;
 
 import javax.servlet.annotation.WebServlet;
@@ -31,13 +35,12 @@ public class PlayerInfoServlet extends HttpServlet {
                 .parse(br);
             List<Player> team = new ArrayList<>();
             for (CSVRecord record: records){
-                String first_name = record.get("first_name");
-                String last_name = record.get("last_name");
+                String name = record.get("name");
                 int points = Integer.parseInt(record.get("points"));
                 int rebounds = Integer.parseInt(record.get("rebounds"));
                 int steals = Integer.parseInt(record.get("steals"));
 
-                Player player = new Player(first_name, last_name, points, rebounds, steals);
+                Player player = new Player(name,points,rebounds,steals);
                 team.add(player);
             }
             Gson gson = new Gson();
