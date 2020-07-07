@@ -1,2 +1,7 @@
+<<<<<<< HEAD
+/home/brandonkj23/step108-2020/ball.ai/src/main/java/com/google/sps/servlets/PlayerInfoServlet.java
+/home/brandonkj23/step108-2020/ball.ai/src/main/java/com/google/sps/data/Player.java
+=======
 /home/diegoesc/step108-2020/ball.ai/src/main/java/com/google/sps/servlets/PlayerInfoServlet.java
 /home/diegoesc/step108-2020/ball.ai/src/main/java/com/google/sps/data/PlayerInfo.java
+>>>>>>> a94b19685ba839dc2f4616a0179a70cb61f38217

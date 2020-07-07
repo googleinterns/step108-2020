@@ -53,14 +53,22 @@
   margin-bottom: 12px; /* Add some space below the input */
 }
   
+<<<<<<< HEAD:ball.ai/target/portfolio-1/style.css
+#listPlayers {
+=======
 #searchBar {
+>>>>>>> a94b19685ba839dc2f4616a0179a70cb61f38217:ball.ai/target/portfolio-1/css/style.css
   /* Remove default list styling */
   list-style-type: none;
   padding: 0;
   margin: 0;
 }
   
+<<<<<<< HEAD:ball.ai/target/portfolio-1/style.css
+#listPlayers li a {
+=======
 #SearchBar li a {
+>>>>>>> a94b19685ba839dc2f4616a0179a70cb61f38217:ball.ai/target/portfolio-1/css/style.css
   border: 1px solid #ddd; /* Add a border to all links */
   margin-top: -1px; /* Prevent double borders */
   background-color: #f6f6f6; /* Grey background color */

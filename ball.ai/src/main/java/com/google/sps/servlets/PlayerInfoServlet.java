@@ -1,13 +1,19 @@
 package com.google.sps.servlets;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Scanner;
+import com.google.sps.data.Player;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.FileInputStream;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import java.util.ArrayList;
 import java.util.List;
-import java.net.URL;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.*;
+
+import com.google.gson.Gson;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -18,21 +24,38 @@ import javax.servlet.http.HttpServletResponse;
 public class PlayerInfoServlet extends HttpServlet {
 
 
-    //reads in csv file of players and prints it in the servlet
+    //reads in csv file of players and converts it to json
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.setContentType("text/html");
-        String fileName = "players.csv";
-        File file = new File(fileName);
+        BufferedReader br = null;
         try{
-            Scanner inputStream = new Scanner(file);
-            while(inputStream.hasNext()){
-                String data = inputStream.next();
-                response.getWriter().println(data);
+            br = new BufferedReader(new FileReader("players.csv"));
+            CSVParser records = CSVFormat.DEFAULT
+                .withFirstRecordAsHeader()
+                .parse(br);
+            List<Player> team = new ArrayList<>();
+            for (CSVRecord record: records){
+                String name = record.get("name");
+                int points = Integer.parseInt(record.get("points"));
+                int rebounds = Integer.parseInt(record.get("rebounds"));
+                int steals = Integer.parseInt(record.get("steals"));
+
+                Player player = new Player(name,points,rebounds,steals);
+                team.add(player);
             }
-            inputStream.close();
-        } catch (FileNotFoundException e){
+            Gson gson = new Gson();
+            response.setContentType("application/json;");
+            response.getWriter().println(gson.toJson(team));
+        } catch (IOException e){
             e.printStackTrace();
+        } finally {
+            try{
+                if(br != null){
+                    br.close();
+                }
+            }catch (IOException ex){
+                ex.printStackTrace();
+            }
         }
         
     }
