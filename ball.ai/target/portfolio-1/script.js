@@ -21,25 +21,47 @@ function searchFunction() {
 }
 
 function drawChart(){
-  var data = google.visualization.arrayToDataTable([
-    ['Player','Anthony Davis', 'LeBron James', 'Kentavious Caldwell-Pope',
-     'Avery Bradley', 'Dwight Howard', { role: 'annotation' } ],
-    ['PPG', 26.7, 25.7, 9.5, 8.6, 7.5,''],
-    ['REB', 16, 22, 23, 30, 16,  ''],
-    ['STL', 28, 19, 29, 30, 12,  '']
-  ]);
+  fetch('/playerInfo').then(response => response.json()).then((team) => {
+   /* var data = google.visualization.arrayToDataTable([
+      ['Player','Anthony Davis', 'LeBron James', 'Kentavious Caldwell-Pope',
+      'Avery Bradley', 'Dwight Howard', { role: 'annotation' } ],
+      ['PPG', 26.7, 25.7, 9.5, 8.6, 7.5,''],
+      ['REB', 16, 22, 23, 30, 16,  ''],
+      ['STL', 28, 19, 29, 30, 12,  '']
+    ]);*/
 
-  var options = {
-    colors:['gray'],
-    width: 600,
-    height: 400,
-    legend: { position: 'top', maxLines: 3 },
-    bar: { groupWidth: '75%' },
-    isStacked: true,
-  };
+    var data = new google.visualization.DataTable();
+    for(i=0;i < team.length;i++){
+      if(i==0){
+        data.addColumn('string','Stats');
+        data.addRows(3);
+        data.setCell(0,0,'PPG');
+        data.setCell(1,0,'REB');
+        data.setCell(2,0,'STL');
+      }
+      data.addColumn('number',team[i].name);
+      data.setCell(0,i+1,team[i].points);
+      data.setCell(1,i+1,team[i].rebounds);
+      data.setCell(2,i+1,team[i].steals);
+    }
+    //data.setCell(0,1,team[0].points);
+    //data.setCell(1,1,team[0].rebounds);
+    //data.setCell(2,1,team[0].steals);
 
-  var chart = new google.charts.Bar(document.getElementById('chart-container'));
+    // Add columns
+    
+    var options = {
+      colors:['gray'],
+      width: 600,
+      height: 400,
+      legend: { position: 'top', maxLines: 3 },
+      bar: { groupWidth: '75%' },
+      isStacked: true,
+    };
 
-  chart.draw(data, google.charts.Bar.convertOptions(options));
+    var chart = new google.charts.Bar(document.getElementById('chart-container'));
+
+    chart.draw(data, google.charts.Bar.convertOptions(options));
+  });
 }
 
