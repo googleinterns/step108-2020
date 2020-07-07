@@ -1,12 +1,11 @@
 package com.google.sps.data;
 
 public class Player {
-    private String first_name, last_name;
+    private String name;
     private int points,rebounds,steals;
 
-    public Player(String first_name, String last_name, int points, int rebounds, int steals){
-        this.first_name = first_name;
-        this.last_name = last_name;
+    public Player(String name, int points, int rebounds, int steals){
+        this.name = name;
         this.points = points;
         this.rebounds = rebounds;
         this.steals = steals;
