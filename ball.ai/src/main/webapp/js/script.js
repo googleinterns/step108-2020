@@ -23,8 +23,9 @@ function searchFunction() {
 
 function drawChart(){
   fetch('/playerInfo').then(response => response.json()).then((team) => {
+    const players = Object.values(team);
     var data = new google.visualization.DataTable();
-    for(i=0;i < team.length;i++){
+    for(i=0;i < players.length;i++){
       if(i==0){
         data.addColumn('string','Stats');
         data.addRows(3);
@@ -32,10 +33,10 @@ function drawChart(){
         data.setCell(1,0,'REB');
         data.setCell(2,0,'STL');
       }
-      data.addColumn('number',team[i].name);
-      data.setCell(0,i+1,team[i].points);
-      data.setCell(1,i+1,team[i].rebounds);
-      data.setCell(2,i+1,team[i].steals);
+      data.addColumn('number',players[i].name);
+      data.setCell(0,i+1,players[i].points);
+      data.setCell(1,i+1,players[i].rebounds);
+      data.setCell(2,i+1,players[i].steals);
     }
     var options = {
       colors:['gray'],
