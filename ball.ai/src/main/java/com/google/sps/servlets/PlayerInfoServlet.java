@@ -33,15 +33,18 @@ public class PlayerInfoServlet extends HttpServlet {
             CSVParser records = CSVFormat.DEFAULT
                 .withFirstRecordAsHeader()
                 .parse(br);
-            List<Player> team = new ArrayList<>();
+            Map<String, Player> team = new HashMap<>();
+            //List<Player> team = new ArrayList<>();
             for (CSVRecord record: records){
                 String name = record.get("name");
                 int points = Integer.parseInt(record.get("points"));
                 int rebounds = Integer.parseInt(record.get("rebounds"));
                 int steals = Integer.parseInt(record.get("steals"));
 
-                Player player = new Player(name,points,rebounds,steals);
-                team.add(player);
+                team.putIfAbsent(name, new Player(name,points,rebounds,steals));
+
+               // Player player = new Player(name,points,rebounds,steals);
+               // team.add(player);
             }
             Gson gson = new Gson();
             response.setContentType("application/json;");
