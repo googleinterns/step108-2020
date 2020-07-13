@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.*;
+import java.lang.Double;
 
 import com.google.gson.Gson;
 
@@ -36,19 +37,20 @@ public class PlayerInfoServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         BufferedReader br = null;
         try{
-            br = new BufferedReader(new FileReader("resources/players.csv"));
+            br = new BufferedReader(new FileReader("resources/player-seasons_per_game.csv"));
             CSVParser records = CSVFormat.DEFAULT
                 .withFirstRecordAsHeader()
                 .parse(br);
             Map<String, Player> team = new HashMap<>();
             for (CSVRecord record: records){
-                String name = record.get("name");
-                int points = Integer.parseInt(record.get("points"));
-                int rebounds = Integer.parseInt(record.get("rebounds"));
-                int steals = Integer.parseInt(record.get("steals"));
-                int year = Integer.parseInt(record.get("year"));
+                String name = record.get("PLAYER_NAME");
+                double points = Double.parseDouble(record.get("PTS"));
+                double rebounds = Double.parseDouble(record.get("REB"));
+                double steals = Double.parseDouble(record.get("STL"));
+                int year = Integer.parseInt(record.get("SEASON"));
+                String ID = name + year;
 
-                team.putIfAbsent(name, new Player(name,points,rebounds,steals,year));
+                team.putIfAbsent(ID, new Player(name,points,rebounds,steals,year));
             }
             Gson gson = new Gson();
             response.setContentType("application/json;");
