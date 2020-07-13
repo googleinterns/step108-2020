@@ -1,26 +1,27 @@
 package com.google.sps.data;
 
 import com.google.sps.data.Team;
+import com.google.sps.data.Game;
+import java.util.List;
 import java.util.ArrayList;
 
 public class Schedule {
-    private int year;
-    private ArrayList<Integer[]> games = null;
-    private ArrayList<Team> teams = null;
+    public int year;
+    public List<Game> games = null;
+    public List<Team> teams = null;
 
-    public Schedule(int year, ArrayList<Team> teams) {
+    public Schedule(int year) {
         this.year = year;
-        this.teams = teams;
     }
 
-    public void addGame(Integer[] game) {
+    public void addGame(Game game) {
         if (this.games == null) {
             this.games = new ArrayList<>();
         }
         this.games.add(game);
     }
 
-    public void addGames(ArrayList<Integer[]> games) {
+    public void addGames(List<Game> games) {
         this.games = games;
     }
 
@@ -31,7 +32,7 @@ public class Schedule {
         this.teams.add(team);
     }
 
-    public void addTeams(ArrayList<Team> teams) {
+    public void addTeams(List<Team> teams) {
         this.teams = teams;
     }
 }
