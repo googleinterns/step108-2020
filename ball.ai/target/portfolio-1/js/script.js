@@ -20,7 +20,7 @@ function searchFunction() {
   }
 }
 
-
+//draws a chart of players selected by the user
 function drawChart(){
   fetch('/playerInfo').then(response => response.json()).then((team) => {
     text = localStorage.getItem("playersArray");
@@ -64,6 +64,7 @@ function drawChart(){
   });
 }
 
+//adds a player to the area in storage
 function choosePlayer(id){
   text = localStorage.getItem("playersArray");
   var players = JSON.parse(text);
@@ -82,6 +83,7 @@ function choosePlayer(id){
   drawChart();
 }
 
+//creates an empty array of players and stores it
 function createPlayersArray(){
   var players = new Array();
   player ={

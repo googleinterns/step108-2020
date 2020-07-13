@@ -9,5 +9,8 @@
   </static-files>
   <resource-files>
     <include path="/players.csv"/>
-</resource-files>
+  </resource-files>
+  <resource-files>
+    <include path="/player-seasons_per_game.csv"/>
+  </resource-files>
 </appengine-web-app>
