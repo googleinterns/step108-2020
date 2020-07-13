@@ -12,6 +12,12 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
 public class CSVToObj {
+  /**
+   *
+   * @param filename path to the csv file
+   * @param c class of the object to parse the csv into
+   * @return List of objects whose fields are populated by a line of the csv
+   */
   public <T> List<T> fromFile(String filename, Class<T> c) {
     Field[] fields = c.getFields();
     List<T> list = new ArrayList<>();
@@ -22,6 +28,7 @@ public class CSVToObj {
       CSVParser records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(br);
       for (CSVRecord record : records) {
         try {
+          // Fills an object with data from the sv
           T obj = c.getDeclaredConstructor().newInstance();
           for (Field field : fields) {
             field.set(obj, record.get(field.getName()));
