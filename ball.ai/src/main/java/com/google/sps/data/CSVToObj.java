@@ -42,12 +42,7 @@ public class CSVToObj {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
-        } /* catch (FileNotFoundException e) {
-            // Invalid year specified
-            response.setContentType("application/json;");
-            response.getWriter().println("false");
-        } */ finally {
+        } finally {
             try {
                 if (br != null){
                     br.close();
