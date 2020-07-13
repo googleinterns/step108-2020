@@ -28,7 +28,7 @@ public class CSVToObj {
       CSVParser records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(br);
       for (CSVRecord record : records) {
         try {
-          // Fills an object with data from the sv
+          // Fills an object with data from the csv
           T obj = c.getDeclaredConstructor().newInstance();
           for (Field field : fields) {
             field.set(obj, record.get(field.getName()));
