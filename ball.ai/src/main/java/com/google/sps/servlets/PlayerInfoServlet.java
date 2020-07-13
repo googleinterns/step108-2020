@@ -15,6 +15,13 @@ import java.util.*;
 
 import com.google.gson.Gson;
 
+import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Query.SortDirection;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -29,22 +36,19 @@ public class PlayerInfoServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         BufferedReader br = null;
         try{
-            br = new BufferedReader(new FileReader("players.csv"));
+            br = new BufferedReader(new FileReader("resources/players.csv"));
             CSVParser records = CSVFormat.DEFAULT
                 .withFirstRecordAsHeader()
                 .parse(br);
             Map<String, Player> team = new HashMap<>();
-            //List<Player> team = new ArrayList<>();
             for (CSVRecord record: records){
                 String name = record.get("name");
                 int points = Integer.parseInt(record.get("points"));
                 int rebounds = Integer.parseInt(record.get("rebounds"));
                 int steals = Integer.parseInt(record.get("steals"));
+                int year = Integer.parseInt(record.get("year"));
 
-                team.putIfAbsent(name, new Player(name,points,rebounds,steals));
-
-               // Player player = new Player(name,points,rebounds,steals);
-               // team.add(player);
+                team.putIfAbsent(name, new Player(name,points,rebounds,steals,year));
             }
             Gson gson = new Gson();
             response.setContentType("application/json;");
