@@ -28,7 +28,8 @@ function drawChart(){
     const players = Object.values(team);
     var data = new google.visualization.DataTable();
     var counter = 1;
-    for(i=0;i < players.length;i++){
+    const map = new Map(Object.entries(team));
+    for(i=0;i < selectedPlayers.length;i++){
       if(i==0){
         data.addColumn('string','Stats');
         data.addRows(3);
@@ -36,8 +37,15 @@ function drawChart(){
         data.setCell(1,0,'REB');
         data.setCell(2,0,'STL');
       }
+      if(map.has(selectedPlayers[i].id)){
+        data.addColumn('number',map.get(selectedPlayers[i].id).name);
+        data.setCell(0,counter,map.get(selectedPlayers[i].id).points);
+        data.setCell(1,counter,map.get(selectedPlayers[i].id).rebounds);
+        data.setCell(2,counter,map.get(selectedPlayers[i].id).steals);
+        counter++;
+      }
       console.log("hi");
-      for(j=0; j < selectedPlayers.length; j++){
+      /*for(j=0; j < selectedPlayers.length; j++){
         console.log(selectedPlayers[j].name);
         if(selectedPlayers[j].name==players[i].name && 
           selectedPlayers[j].year==players[i].year){
@@ -47,7 +55,7 @@ function drawChart(){
           data.setCell(2,counter,players[i].steals);
           counter++;
         }
-      }
+      }*/
     }
     var options = {
       colors:['gray'],
@@ -68,9 +76,12 @@ function drawChart(){
 function choosePlayer(id){
   text = localStorage.getItem("playersArray");
   var players = JSON.parse(text);
+  var sname = document.getElementById('player-input'+id).value;
+  var season = document.getElementById('year-input'+id).value;
   player ={
-    name: document.getElementById('player-input'+id).value,
-    year: document.getElementById('year-input'+id).value,
+    name: sname,
+    year: season,
+    id: sname+season,
   }
   if(players[0].name==""){
     players[0]=player;
@@ -89,6 +100,7 @@ function createPlayersArray(){
   player ={
     name: "",
     year: "",
+    id: "",
   }
   players.push(player);
   var playerJSON = JSON.stringify(players);
