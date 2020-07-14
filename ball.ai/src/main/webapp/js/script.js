@@ -2,22 +2,27 @@ google.charts.load('current', {'packages':['bar']});
 google.charts.setOnLoadCallback(drawChart);
 
 function searchFunction() {
-  var input, filter, ul, li, a, i, txtValue;
-  input = document.getElementById('searchQuery');
-  filter = input.value.toUpperCase();
-  ul = document.getElementById("listPlayers");
-  li = ul.getElementsByTagName('li');
+  fetch('/search').then(response => response.json()).then((players) => {
+    const playersList = new Map(Object.entries(players));
+    var input, filter, ul, li, a, i, txtValue;
+    input = document.getElementById('searchQuery');
+    filter = input.value.toUpperCase();
+    ul = document.getElementById("listPlayers");
+    li = ul.getElementsByTagName('li');
 
-  // Loop through all list items, and hide those who don't match the search query
-  for (i = 0; i < li.length; i++) {
-    a = li[i].getElementsByTagName("a")[0];
-    txtValue = a.textContent || a.innerText;
-    if (txtValue.toUpperCase().indexOf(filter) > -1) {
-      li[i].style.display = "";
-    } else {
-      li[i].style.display = "none";
+
+
+    // Loop through all list items, and hide those who don't match the search query
+    for (i = 0; i < li.length; i++) {
+      a = li[i].getElementsByTagName("a")[0];
+      txtValue = a.textContent || a.innerText;
+      if (txtValue.toUpperCase().indexOf(filter) > -1) {
+        li[i].style.display = "";
+      } else {
+        li[i].style.display = "none";
+      }
     }
-  }
+  });
 }
 
 //draws a chart of players selected by the user
@@ -25,10 +30,10 @@ function drawChart(){
   fetch('/playerInfo').then(response => response.json()).then((team) => {
     text = localStorage.getItem("playersArray");
     selectedPlayers = JSON.parse(text);
-    const players = Object.values(team);
+    const players = new Map(Object.entries(team));
     var data = new google.visualization.DataTable();
     var counter = 1;
-    for(i=0;i < players.length;i++){
+    for(i=0;i < selectedPlayers.length;i++){
       if(i==0){
         data.addColumn('string','Stats');
         data.addRows(3);
@@ -36,18 +41,14 @@ function drawChart(){
         data.setCell(1,0,'REB');
         data.setCell(2,0,'STL');
       }
-      console.log("hi");
-      for(j=0; j < selectedPlayers.length; j++){
-        console.log(selectedPlayers[j].name);
-        if(selectedPlayers[j].name==players[i].name && 
-          selectedPlayers[j].year==players[i].year){
-          data.addColumn('number',players[i].name);
-          data.setCell(0,counter,players[i].points);
-          data.setCell(1,counter,players[i].rebounds);
-          data.setCell(2,counter,players[i].steals);
-          counter++;
-        }
+      if(players.has(selectedPlayers[i].id)){
+        data.addColumn('number',players.get(selectedPlayers[i].id).name);
+        data.setCell(0,counter,players.get(selectedPlayers[i].id).points);
+        data.setCell(1,counter,players.get(selectedPlayers[i].id).rebounds);
+        data.setCell(2,counter,players.get(selectedPlayers[i].id).steals);
+        counter++;
       }
+
     }
     var options = {
       colors:['gray'],
@@ -68,11 +69,12 @@ function drawChart(){
 function choosePlayer(id){
   text = localStorage.getItem("playersArray");
   var players = JSON.parse(text);
+  var name = document.getElementById('player-input'+id).value;
+  var season = document.getElementById('year-input'+id).value;
   player ={
-    name: document.getElementById('player-input'+id).value,
-    year: document.getElementById('year-input'+id).value,
+    id: name+season,
   }
-  if(players[0].name==""){
+  if(players[0].id==""){
     players[0]=player;
   }else{
     players.push(player);
@@ -87,8 +89,7 @@ function choosePlayer(id){
 function createPlayersArray(){
   var players = new Array();
   player ={
-    name: "",
-    year: "",
+    id: "",
   }
   players.push(player);
   var playerJSON = JSON.stringify(players);
