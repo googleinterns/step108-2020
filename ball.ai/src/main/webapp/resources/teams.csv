@@ -1,0 +1,31 @@
+is_nba_team,team_name,team_nickname,team_code,team_abbrev,city,state,team_short_name,team_id,conference,division_id
+True,Boston,Celtics,celtics,BOS,Boston,MA,Boston,1610612738,East,Atlantic
+True,Brooklyn,Nets,nets,BKN,Brooklyn,NY,Brooklyn,1610612751,East,Atlantic
+True,New York,Knicks,knicks,NYK,New York,NY,New York,1610612752,East,Atlantic
+True,Philadelphia,76ers,sixers,PHI,Philadelphia,PA,Philadelphia,1610612755,East,Atlantic
+True,Toronto,Raptors,raptors,TOR,Toronto,ON,Toronto,1610612761,East,Atlantic
+True,Cleveland,Cavaliers,cavaliers,CLE,Cleveland,OH,Cleveland,1610612739,East,Central
+True,Chicago,Bulls,bulls,CHI,Chicago,IL,Chicago,1610612741,East,Central
+True,Milwaukee,Bucks,bucks,MIL,Milwaukee,WI,Milwaukee,1610612749,East,Central
+True,Indiana,Pacers,pacers,IND,Indiana,IN,Indiana,1610612754,East,Central
+True,Detroit,Pistons,pistons,DET,Detroit,MI,Detroit,1610612765,East,Central
+True,Atlanta,Hawks,hawks,ATL,Atlanta,GA,Atlanta,1610612737,East,Southeast
+True,Miami,Heat,heat,MIA,Miami,FL,Miami,1610612748,East,Southeast
+True,Orlando,Magic,magic,ORL,Orlando,FL,Orlando,1610612753,East,Southeast
+True,Washington,Wizards,wizards,WAS,Washington,DC,Washington,1610612764,East,Southeast
+True,Charlotte,Hornets,hornets,CHA,Charlotte,NC,Charlotte,1610612766,East,Southeast
+True,Denver,Nuggets,nuggets,DEN,Denver,CO,Denver,1610612743,West,Northwest
+True,Minnesota,Timberwolves,timberwolves,MIN,Minnesota,MN,Minnesota,1610612750,West,Northwest
+True,Portland,Trail Blazers,blazers,POR,Portland,OR,Portland,1610612757,West,Northwest
+True,Oklahoma City,Thunder,thunder,OKC,Oklahoma City,OK,Oklahoma City,1610612760,West,Northwest
+True,Utah,Jazz,jazz,UTA,Utah,UT,Utah,1610612762,West,Northwest
+True,Golden State,Warriors,warriors,GSW,Golden State,CA,Golden State,1610612744,West,Pacific
+True,LA,Clippers,clippers,LAC,LA,CA,LA Clippers,1610612746,West,Pacific
+True,LA,Lakers,lakers,LAL,Los Angeles,CA,L.A. Lakers,1610612747,West,Pacific
+True,Phoenix,Suns,suns,PHX,Phoenix,AZ,Phoenix,1610612756,West,Pacific
+True,Sacramento,Kings,kings,SAC,Sacramento,CA,Sacramento,1610612758,West,Pacific
+True,New Orleans,Pelicans,pelicans,NOP,New Orleans,LA,New Orleans,1610612740,West,Southwest
+True,Dallas,Mavericks,mavericks,DAL,Dallas,TX,Dallas,1610612742,West,Southwest
+True,Houston,Rockets,rockets,HOU,Houston,TX,Houston,1610612745,West,Southwest
+True,San Antonio,Spurs,spurs,SAS,San Antonio,TX,San Antonio,1610612759,West,Southwest
+True,Memphis,Grizzlies,grizzlies,MEM,Memphis,TN,Memphis,1610612763,West,Southwest
