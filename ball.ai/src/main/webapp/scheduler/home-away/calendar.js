@@ -1,17 +1,16 @@
 const days = 176;
 
-const firstday = d3.timeDay(new Date("2015-10-20"));
-console.log(firstday);
+const firstDay = d3.timeDay(new Date("2015-10-28"));
 
 let teams = [];
 
-const teamCsv = d3.csv("/resources/teams.csv").then(data => {
+d3.csv("/resources/teams.csv").then(data => {
     data.forEach(d => {
         teams.push(d["team_abbrev"]);
     })
 });
 
-const scheduleCsv = d3.csv("schedule.csv").then(data => {
+d3.csv("schedule.csv").then(data => {
     data.forEach(d => {
         // Map to dates and team names
         // d.day = d3.timeDay.offset(firstday, +d.day);
@@ -23,7 +22,7 @@ const scheduleCsv = d3.csv("schedule.csv").then(data => {
     // Count number of games per day
     let schedule = [];
     for (let i = 0; i < days; i++) {
-        const date = d3.timeDay.offset(firstday, i);
+        const date = d3.timeDay.offset(firstDay, i);
         schedule.push({"date": date, "value": data.filter(d => d.day === i).length});
     }
     this.data = data;
@@ -32,6 +31,8 @@ const scheduleCsv = d3.csv("schedule.csv").then(data => {
 });
 
 const svgDiv = document.getElementById("svgContainer");
+const modalTitle = document.getElementById("modalTitle");
+const modalBody = document.getElementById("modalBody");
 // Extract the width and height of the window.
 const width = svgDiv.clientWidth;
 const height = svgDiv.clientHeight;
@@ -52,10 +53,10 @@ function drawCalendar() {
 
     const cellSize = 40;
     const yearHeight = cellSize * 7;
-    const group = svg.append("g");
-    group.attr("transform", `translate(50, ${cellSize * 1.5})`)
+    const season = svg.append("g");
+    season.attr("transform", `translate(50, ${cellSize * 1.5})`)
 
-    group
+    season
         .append("text")
         .attr("x", -5)
         .attr("y", -30)
@@ -76,7 +77,7 @@ function drawCalendar() {
         .domain([Math.floor(minValue), Math.ceil(maxValue)]);
     const format = d3.format("+.2%");
 
-    group
+    season
         .append("g")
         .attr("text-anchor", "end")
         .selectAll("text")
@@ -88,34 +89,49 @@ function drawCalendar() {
         .attr("font-size", 12)
         .text(formatDay);
 
-    group
+    season
         .append("g")
         .selectAll("rect")
         .data(this.schedule)
         .join("rect")
         .attr("width", cellSize - 1.5)
         .attr("height", cellSize - 1.5)
-        .attr(
-            "x",
-            d => timeWeek.count(d3.utcYear(d.date), d.date) * cellSize + 10
-        )
+        .attr("x", d => timeWeek.count(firstDay, d.date) * cellSize + 10)
         .attr("y", d => countDay(d.date) * cellSize + 0.5)
         .attr("fill", d => colorFn(d.value))
-        .on("click", d => {
-            const day = d3.timeDay.count(firstday, d.date);
+        .attr("data-toggle", "modal")
+        .attr("data-target", "#scheduleModal")
+        .on("click", data => {
+            for (let i = 0; i < modalBody.children.length; i++) {
+                modalBody.removeChild(modalBody.children[i]);
+            }
+            modalTitle.innerText = data.date;
+            const day = d3.timeDay.count(firstDay, data.date);
             const games = this.data.filter(d => d.day === day);
             const formatted = games.map(d => `${d.team1} vs. ${d.team2}`)
-            alert(formatted.join("\n"));
+            for (let i = 0; i < data.value; i++) {
+                let li = document.createElement("li");
+                li.innerText = formatted[i];
+                li.classList.add("list-group-item");
+                li.onclick = e => {
+                    for (let j = 0; j < modalBody.children.length; j++) {
+                        let classes = modalBody.children[j].classList;
+                        if (classes.contains("active")) {
+                            classes.remove("active");
+                            break;
+                        }
+                    }
+                    e.target.classList.add("active");
+                }
+                modalBody.appendChild(li);
+            }
         })
         .append("title")
         .text(d => `${formatDate(d.date)}: ${d.value}`);
 
-    const legend = group
+    const legend = season
         .append("g")
-        .attr(
-            "transform",
-            `translate(10, ${yearHeight + cellSize * 2})`
-        );
+        .attr("transform", `translate(10, ${yearHeight + cellSize * 2})`);
 
     const categoriesCount = maxValue / 2;
     const categories = [...Array(categoriesCount)].map((_, i) => {
@@ -130,8 +146,6 @@ function drawCalendar() {
         };
     });
 
-    console.log(categories);
-
     const legendWidth = 60;
 
     legend
@@ -143,13 +157,11 @@ function drawCalendar() {
         .attr("x", (d, i) => legendWidth * i)
         .attr("width", legendWidth)
         .attr("height", 15)
-    // .on("click", toggle);
 
     legend
         .selectAll("text")
         .data(categories)
         .join("text")
-        // .attr("transform", "rotate(90)")
         .attr("x", (d, i) => legendWidth * i)
         .attr("y", 25)
         .attr("dx", legendWidth / 4)
@@ -162,6 +174,15 @@ function drawCalendar() {
         .attr("dy", -5)
         .attr("font-size", 14)
         .attr("text-decoration", "underline")
-    // .text("Click on category to select/deselect days");
+
+    let teamGroup = season.append("g");
+    teamGroup
+        .attr("transform", `translate(10, ${yearHeight + cellSize * 10})`)
+        .append("rect")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", 100)
+            .attr("height", 50)
+            .attr("fill", "black")
 }
 
