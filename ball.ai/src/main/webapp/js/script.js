@@ -27,6 +27,37 @@ function search(){
   });
 }
 
+function selectedPlayer(){
+  fetch('/search').then(response => response.json()).then((players) => {
+    const seasonsPlayed = new Map(Object.entries(players));
+    input = document.getElementById('searchQuery').value;
+    document.getElementById('list').innerHTML= '';
+    counter = 0;
+
+    var player = document.createElement('ul');
+    player.id = 'listPlayers';
+    var liElement = document.createElement('li');
+    liElement.innerText = input;
+    var datalist = document.createElement('datalist');
+    datalist.id = 'seasons';
+    var season = document.createElement('input');
+    season.type = 'number';
+    season.list = 'seasons';
+
+    for(j=0; j< seasonsPlayed.get(input).length;j++){
+      var opt = document.createElement("option");
+      var value = document.createTextNode(seasonsPlayed.get(input)[j])
+      opt.appendChild(value);
+      datalist.appendChild(opt);
+    }
+    liElement.appendChild(season);
+    liElement.appendChild(datalist);
+    player.appendChild(liElement);
+    document.getElementById('selectedPlayer').appendChild(player);
+
+  });
+}
+
 //draws a chart of players selected by the user
 function drawChart(){
   fetch('/playerInfo').then(response => response.json()).then((team) => {
