@@ -65,10 +65,8 @@ function drawCalendar() {
         .text("2015");
 
     const formatDay = d =>
-        ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"][d.getUTCDay()];
+        ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"][d];
 
-    const countDay = d => d.getUTCDay();
-    const timeWeek = d3.utcSunday;
     const formatDate = d3.utcFormat("%x");
     const colorFn = d3
         .scaleSequential(d3.interpolateBuGn)
@@ -78,10 +76,10 @@ function drawCalendar() {
         .append("g")
         .attr("text-anchor", "end")
         .selectAll("text")
-        .data(d3.range(7).map(i => new Date(1995, 0, i)))
+        .data([...d3.range(7)])
         .join("text")
         .attr("x", -5)
-        .attr("y", d => (countDay(d) + 0.5) * cellSize)
+        .attr("y", d => (d + 0.5) * cellSize)
         .attr("dy", "0.31em")
         .attr("font-size", 12)
         .text(formatDay);
@@ -93,8 +91,8 @@ function drawCalendar() {
         .join("rect")
         .attr("width", cellSize - 1.5)
         .attr("height", cellSize - 1.5)
-        .attr("x", d => timeWeek.count(firstDay, d.date) * cellSize + 10)
-        .attr("y", d => countDay(d.date) * cellSize + 0.5)
+        .attr("x", d => d3.utcSunday.count(firstDay, d.date) * cellSize + 10)
+        .attr("y", d => d.date.getUTCDay() * cellSize + 0.5)
         .attr("fill", d => colorFn(d.value))
         .attr("data-toggle", "modal")
         .attr("data-target", "#scheduleModal")
@@ -103,7 +101,7 @@ function drawCalendar() {
                 modalBody.removeChild(modalBody.lastChild);
             }
 
-            modalTitle.innerText = data.date;
+            modalTitle.innerText = formatDate(data.date);
             const day = d3.timeDay.count(firstDay, data.date);
             const games = this.data.filter(d => d.day === day);
             const formatted = games.map(d => `${d.team1} vs. ${d.team2}`)
@@ -168,4 +166,3 @@ function drawCalendar() {
         });
 
 }
-
