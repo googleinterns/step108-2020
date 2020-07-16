@@ -18,15 +18,43 @@ function search(){
         node.appendChild(val); 
 
         document.getElementById('list').appendChild(node); 
-        for(j=0;j < seasonsPlayed.get(listPlayers[i]).length; j++){
-          var node
-        }
         counter++;
         if(counter >6){
           break;
         }
       }
     }
+  });
+}
+
+function selectedPlayer(){
+  fetch('/search').then(response => response.json()).then((players) => {
+    const seasonsPlayed = new Map(Object.entries(players));
+    input = document.getElementById('searchQuery').value;
+    document.getElementById('list').innerHTML= '';
+    counter = 0;
+
+    var player = document.createElement('ul');
+    player.id = 'listPlayers';
+    var liElement = document.createElement('li');
+    liElement.innerText = input;
+    var datalist = document.createElement('datalist');
+    datalist.id = 'seasons';
+    var season = document.createElement('input');
+    season.type = 'text';
+    season.list = 'seasons';
+
+    for(j=0; j< seasonsPlayed.get(input).length;j++){
+      var opt = document.createElement("option");
+      var value = document.createTextNode(seasonsPlayed.get(input)[j])
+      opt.appendChild(value);
+      datalist.appendChild(opt);
+    }
+    liElement.appendChild(season);
+    liElement.appendChild(datalist);
+    player.appendChild(liElement);
+    document.getElementById('selectedPlayer').appendChild(player);
+
   });
 }
 
