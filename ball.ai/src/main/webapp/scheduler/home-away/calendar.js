@@ -1,34 +1,5 @@
 const days = 176;
-
 const firstDay = d3.timeDay(new Date("2015-10-28"));
-
-let teams = [];
-
-d3.csv("/resources/teams.csv").then(data => {
-    data.forEach(d => {
-        teams.push(d["team_abbrev"]);
-    })
-});
-
-d3.csv("schedule.csv").then(data => {
-    data.forEach(d => {
-        // Map to dates and team names
-        // d.day = d3.timeDay.offset(firstday, +d.day);
-        d.day = +d.day;
-        d.team1 = teams[+d.team1];
-        d.team2 = teams[+d.team2];
-    });
-
-    // Count number of games per day
-    let schedule = [];
-    for (let i = 0; i < days; i++) {
-        const date = d3.timeDay.offset(firstDay, i);
-        schedule.push({"date": date, "value": data.filter(d => d.day === i).length});
-    }
-    this.data = data;
-    this.schedule = schedule;
-    drawCalendar();
-});
 
 const svgDiv = document.getElementById("svgContainer");
 const modalTitle = document.getElementById("modalTitle");
@@ -41,15 +12,43 @@ const svg = d3.select(svgDiv).append("svg");
 
 // Set the size of the SVG element.
 svg
+    // .attr("viewBox", "0 0 500 500")
     .attr("width", width)
     .attr("height", height);
+
+let teams = [];
+d3.csv("/resources/teams.csv").then(data => {
+    data.forEach(d => {
+        teams.push({"abbrv": d["team_abbrev"], "name": `${d["team_name"]} ${d["team_nickname"]}`});
+    });
+    loadSchedule();
+});
+
+function loadSchedule() {
+    d3.csv("schedule.csv").then(data => {
+        data.forEach(d => {
+            // Map to dates and team names
+            d.day = +d.day;
+            d.team1 = teams[+d.team1]["abbrv"];
+            d.team2 = teams[+d.team2]["abbrv"];
+        });
+
+        // Count number of games per day
+        let schedule = [];
+        for (let i = 0; i < days; i++) {
+            const date = d3.timeDay.offset(firstDay, i);
+            schedule.push({"date": date, "value": data.filter(d => d.day === i).length});
+        }
+        this.data = data;
+        this.schedule = schedule;
+        drawCalendar();
+    });
+}
 
 function drawCalendar() {
     const values = this.schedule.map(d => d.value);
     const maxValue = d3.max(values);
     const minValue = 0;
-
-    console.log(values);
 
     const cellSize = 40;
     const yearHeight = cellSize * 7;
@@ -92,7 +91,7 @@ function drawCalendar() {
     season
         .append("g")
         .selectAll("rect")
-        .data(this.schedule)
+        .data(this.schedule, d => d.date)
         .join("rect")
         .attr("width", cellSize - 1.5)
         .attr("height", cellSize - 1.5)
@@ -102,14 +101,15 @@ function drawCalendar() {
         .attr("data-toggle", "modal")
         .attr("data-target", "#scheduleModal")
         .on("click", data => {
-            for (let i = 0; i < modalBody.children.length; i++) {
-                modalBody.removeChild(modalBody.children[i]);
+            while (modalBody.firstChild) {
+                modalBody.removeChild(modalBody.lastChild);
             }
+
             modalTitle.innerText = data.date;
             const day = d3.timeDay.count(firstDay, data.date);
             const games = this.data.filter(d => d.day === day);
             const formatted = games.map(d => `${d.team1} vs. ${d.team2}`)
-            for (let i = 0; i < data.value; i++) {
+            for (let i = 0; i < formatted.length; i++) {
                 let li = document.createElement("li");
                 li.innerText = formatted[i];
                 li.classList.add("list-group-item");
@@ -133,56 +133,39 @@ function drawCalendar() {
         .append("g")
         .attr("transform", `translate(10, ${yearHeight + cellSize * 2})`);
 
-    const categoriesCount = maxValue / 2;
-    const categories = [...Array(categoriesCount)].map((_, i) => {
-        const upperBound = (maxValue / categoriesCount) * (i + 1);
-        const lowerBound = (maxValue / categoriesCount) * i;
-
+    const rowLen = 6;
+    const categories = teams.map(t => {
         return {
-            upperBound,
-            lowerBound,
-            color: d3.interpolateBuGn(upperBound / maxValue),
+            abbrv: t["abbrv"],
+            src: `/resources/logos/${t["name"]}.png`,
             selected: true
-        };
+        }
     });
 
-    const legendWidth = 60;
+    const imageWidth = 60;
 
     legend
-        .selectAll("rect")
+        .selectAll("image")
         .data(categories)
-        .enter()
-        .append("rect")
-        .attr("fill", d => d.color)
-        .attr("x", (d, i) => legendWidth * i)
-        .attr("width", legendWidth)
-        .attr("height", 15)
+        .join("image")
+        .attr('xlink:href', d => d.src)
+        .attr("x", (d, i) => imageWidth * (i % rowLen))
+        .attr("y", (d, i) => imageWidth * (Math.floor(i / rowLen)))
+        .attr("width", imageWidth)
+        .attr("height", imageWidth)
+        .on("click", (data, i, nodes) => {
+            const {src, selected} = data;
+            data.selected = !selected;
+            nodes[i].style.opacity = data.selected ? 1 : 0.2;
 
-    legend
-        .selectAll("text")
-        .data(categories)
-        .join("text")
-        .attr("x", (d, i) => legendWidth * i)
-        .attr("y", 25)
-        .attr("dx", legendWidth / 4)
-        .attr("text-anchor", "start")
-        .attr("font-size", 11)
-        .text(d => `${d.lowerBound} - ${d.upperBound}`);
+            const teamDays = this.data.filter(g => g.team1 == data.abbrv).map(g => this.schedule[g.day]);
 
-    legend
-        .append("text")
-        .attr("dy", -5)
-        .attr("font-size", 14)
-        .attr("text-decoration", "underline")
+            season.selectAll("rect")
+                .data(teamDays, d => d.date)
+                .transition()
+                .duration(500)
+                .attr('fill', d => data.selected ? colorFn(++d.value) : colorFn(--d.value));
+        });
 
-    let teamGroup = season.append("g");
-    teamGroup
-        .attr("transform", `translate(10, ${yearHeight + cellSize * 10})`)
-        .append("rect")
-            .attr("x", 0)
-            .attr("y", 0)
-            .attr("width", 100)
-            .attr("height", 50)
-            .attr("fill", "black")
 }
 
