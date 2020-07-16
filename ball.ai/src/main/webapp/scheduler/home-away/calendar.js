@@ -1,4 +1,4 @@
-const days = 176;
+const days = 177;
 const firstDay = d3.timeDay(new Date("2015-10-28"));
 
 const svgDiv = document.getElementById("svgContainer");
@@ -47,8 +47,7 @@ function loadSchedule() {
 
 function drawCalendar() {
     const values = this.schedule.map(d => d.value);
-    const maxValue = d3.max(values);
-    const minValue = 0;
+    let maxValue = Math.max(...values);
 
     const cellSize = 40;
     const yearHeight = cellSize * 7;
@@ -73,8 +72,7 @@ function drawCalendar() {
     const formatDate = d3.utcFormat("%x");
     const colorFn = d3
         .scaleSequential(d3.interpolateBuGn)
-        .domain([Math.floor(minValue), Math.ceil(maxValue)]);
-    const format = d3.format("+.2%");
+        .domain([0, maxValue]);
 
     season
         .append("g")
@@ -144,13 +142,15 @@ function drawCalendar() {
 
     const imageWidth = 60;
 
+    const paddingX = 30;
+    const paddingY = 15;
     legend
         .selectAll("image")
         .data(categories)
         .join("image")
         .attr('xlink:href', d => d.src)
-        .attr("x", (d, i) => imageWidth * (i % rowLen))
-        .attr("y", (d, i) => imageWidth * (Math.floor(i / rowLen)))
+        .attr("x", (d, i) => (imageWidth + paddingX) * (i % rowLen))
+        .attr("y", (d, i) => (imageWidth + paddingY) * (Math.floor(i / rowLen)))
         .attr("width", imageWidth)
         .attr("height", imageWidth)
         .on("click", (data, i, nodes) => {
@@ -158,7 +158,7 @@ function drawCalendar() {
             data.selected = !selected;
             nodes[i].style.opacity = data.selected ? 1 : 0.2;
 
-            const teamDays = this.data.filter(g => g.team1 == data.abbrv).map(g => this.schedule[g.day]);
+            const teamDays = this.data.filter(g => g.team1 === data.abbrv).map(g => this.schedule[g.day]);
 
             season.selectAll("rect")
                 .data(teamDays, d => d.date)
