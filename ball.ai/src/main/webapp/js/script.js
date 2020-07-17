@@ -27,6 +27,7 @@ function search(){
   });
 }
 
+//creates an element of the players chosen
 function selectedPlayer(){
   fetch('/search').then(response => response.json()).then((players) => {
     const seasonsPlayed = new Map(Object.entries(players));
@@ -42,7 +43,20 @@ function selectedPlayer(){
     datalist.id = 'seasons';
     var season = document.createElement('input');
     season.type = 'number';
-    season.list = 'seasons';
+    season.setAttribute('list','seasons');
+    const addPlayerButton = document.createElement('input');
+    addPlayerButton.type = 'button';
+    addPlayerButton.value = 'Add Player';
+
+    //button adds the selected player to the chart
+    addPlayerButton.addEventListener('click',() => {
+      player ={
+        id: input+season.value,
+      }
+      selectedPlayers.push(player);
+      console.log(player.id);
+      drawChart();
+    });
 
     for(j=0; j< seasonsPlayed.get(input).length;j++){
       var opt = document.createElement("option");
@@ -52,6 +66,7 @@ function selectedPlayer(){
     }
     liElement.appendChild(season);
     liElement.appendChild(datalist);
+    liElement.appendChild(addPlayerButton);
     player.appendChild(liElement);
     document.getElementById('selectedPlayer').appendChild(player);
 
@@ -96,7 +111,7 @@ function drawChart(){
   });
 }
 
-//adds a player to the area in storage
+//adds a player to the chart
 function choosePlayer(id){
   var name = document.getElementById('player-input'+id).value;
   var season = document.getElementById('year-input'+id).value;
