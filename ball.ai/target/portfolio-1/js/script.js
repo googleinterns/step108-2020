@@ -41,8 +41,19 @@ function selectedPlayer(){
     var datalist = document.createElement('datalist');
     datalist.id = 'seasons';
     var season = document.createElement('input');
-    season.type = 'text';
-    season.list = 'seasons';
+    season.type = 'number';
+    season.setAttribute('list','seasons');
+    const addPlayerButton = document.createElement('input');
+    addPlayerButton.type = 'button';
+    addPlayerButton.value = 'Add Player';
+    addPlayerButton.addEventListener('click',() => {
+      player ={
+        id: input+season.value,
+      }
+      selectedPlayers.push(player);
+      console.log(player.id);
+      drawChart();
+    });
 
     for(j=0; j< seasonsPlayed.get(input).length;j++){
       var opt = document.createElement("option");
@@ -52,10 +63,20 @@ function selectedPlayer(){
     }
     liElement.appendChild(season);
     liElement.appendChild(datalist);
+    liElement.appendChild(addPlayerButton);
     player.appendChild(liElement);
     document.getElementById('selectedPlayer').appendChild(player);
 
   });
+}
+
+function addPlayer(name,season){
+  player ={
+    id: name+season,
+  }
+  selectedPlayers.push(player);
+  console.log(player.id);
+  drawChart();
 }
 
 //draws a chart of players selected by the user
