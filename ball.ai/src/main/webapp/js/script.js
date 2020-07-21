@@ -47,15 +47,23 @@ function selectedPlayer(){
     const addPlayerButton = document.createElement('input');
     addPlayerButton.type = 'button';
     addPlayerButton.value = 'Add Player';
+    const deletePlayerButton = document.createElement('input');
+    deletePlayerButton.type = 'button';
+    deletePlayerButton.value = 'Remove Player';
 
     //button adds the selected player to the chart
     addPlayerButton.addEventListener('click',() => {
+      createPlayernode(input);
       player ={
         id: input+season.value,
       }
       selectedPlayers.push(player);
       console.log(player.id);
       drawChart();
+    });
+
+    deletePlayerButton.addEventListener('click',() => {
+      liElement.remove();
     });
 
     for(j=0; j< seasonsPlayed.get(input).length;j++){
@@ -67,10 +75,19 @@ function selectedPlayer(){
     liElement.appendChild(season);
     liElement.appendChild(datalist);
     liElement.appendChild(addPlayerButton);
+    liElement.appendChild(deletePlayerButton);
     player.appendChild(liElement);
     document.getElementById('selectedPlayer').appendChild(player);
 
   });
+}
+
+function createPlayernode(name){
+  var player  = document.getElementById('PG-container');
+  player.innerText = name;
+  var img = document.createElement('img');
+  img.src = "/images/Lebron_James.jpg"
+  player.appendChild(img);
 }
 
 //draws a chart of players selected by the user
