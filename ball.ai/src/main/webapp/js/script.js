@@ -6,7 +6,6 @@ const selectedPlayers = new Array();
 function search(){
   fetch('/search').then(response => response.json()).then((players) => {
     const listPlayers = Object.keys(players);
-    const seasonsPlayed = new Map(Object.entries(players));
     input = document.getElementById('searchQuery').value;
     document.getElementById('list').innerHTML= '';
     counter = 0;
@@ -30,7 +29,7 @@ function search(){
 //creates an element of the players chosen
 function selectedPlayer(){
   fetch('/search').then(response => response.json()).then((players) => {
-    const seasonsPlayed = new Map(Object.entries(players));
+    const playerInfo = new Map(Object.entries(players));
     input = document.getElementById('searchQuery').value;
     document.getElementById('list').innerHTML= '';
     counter = 0;
@@ -53,7 +52,7 @@ function selectedPlayer(){
 
     //button adds the selected player to the chart
     addPlayerButton.addEventListener('click',() => {
-      createPlayernode(input);
+      createPlayernode(input,playerInfo.get(input).player_id);
       player ={
         id: input+season.value,
       }
@@ -66,9 +65,9 @@ function selectedPlayer(){
       liElement.remove();
     });
 
-    for(j=0; j< seasonsPlayed.get(input).length;j++){
+    for(j=0; j< playerInfo.get(input).seasonsPlayed.length;j++){
       var opt = document.createElement("option");
-      var value = document.createTextNode(seasonsPlayed.get(input)[j])
+      var value = document.createTextNode(playerInfo.get(input).seasonsPlayed[j])
       opt.appendChild(value);
       datalist.appendChild(opt);
     }
@@ -82,12 +81,14 @@ function selectedPlayer(){
   });
 }
 
-function createPlayernode(name){
+function createPlayernode(name,id){
   var player  = document.getElementById('PG-container');
   player.innerText = name;
   var img = document.createElement('img');
-  img.src = "/images/Lebron_James.jpg"
-  player.appendChild(img);
+  if(imageExists(url)){
+    img.src = "/images/downsize_player/"+id+".jpg";
+    player.appendChild(img);
+  }
 }
 
 //draws a chart of players selected by the user
@@ -140,5 +141,20 @@ function choosePlayer(id){
   drawChart();
 }
 
+function imageExists(url){
+
+  var image = new Image();
+
+  image.src = url;
+
+  if (!image.complete) {
+      return false;
+  }
+  else if (image.height === 0) {
+      return false;
+  }
+
+  return true;
+}
 
 
