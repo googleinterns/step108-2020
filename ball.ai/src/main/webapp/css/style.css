@@ -26,6 +26,12 @@
 .right {
   background-color:#bbb;
   width: 75%;
+  list-style-type: none;
+}
+
+.right li{
+  float: left;
+  border: 1px solid black;
 }
 
 .row:after {

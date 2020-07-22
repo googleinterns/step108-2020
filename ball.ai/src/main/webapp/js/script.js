@@ -52,10 +52,10 @@ function selectedPlayer(){
 
     //button adds the selected player to the chart
     addPlayerButton.addEventListener('click',() => {
-      createPlayernode(input,playerInfo.get(input).player_id);
       player ={
         id: input+season.value,
       }
+      createPlayernode(input,playerInfo.get(input).player_id,player.id);
       selectedPlayers.push(player);
       console.log(player.id);
       drawChart();
@@ -81,14 +81,34 @@ function selectedPlayer(){
   });
 }
 
-function createPlayernode(name,id){
-  var player  = document.getElementById('PG-container');
+function createPlayernode(name,id,playerid){
+  var container  = document.getElementById('PG-container');
+  var player = document.createElement('li');
   player.innerText = name;
+  var url = "/images/downsize_player/"+id+".jpg"
   var img = document.createElement('img');
-  if(imageExists(url)){
-    img.src = "/images/downsize_player/"+id+".jpg";
-    player.appendChild(img);
-  }
+  img.height = "60";
+  player.appendChild(img);
+  var deleteButton = document.createElement('input');
+  deleteButton.type = 'button';
+  deleteButton.value = 'remove from team';
+
+  //removes player from chart
+  deleteButton.addEventListener('click',() => {
+    player.remove();
+    for(i=0; i < selectedPlayers.length;i++){
+      if(selectedPlayers[i].id == playerid){
+        selectedPlayers.splice(i,i+1);
+      }
+    }
+    drawChart();
+    
+  });
+  player.appendChild(deleteButton);
+  //if(imageExists(url)){
+    img.src = url;
+  //}
+  container.appendChild(player);
 }
 
 //draws a chart of players selected by the user
