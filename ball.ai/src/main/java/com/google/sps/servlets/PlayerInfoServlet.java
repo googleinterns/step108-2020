@@ -35,12 +35,14 @@ public class PlayerInfoServlet extends HttpServlet {
             for (CSVRecord record: records){
                 String name = record.get("PLAYER_NAME");
                 double points = Double.parseDouble(record.get("PTS"));
+                double assists = Double.parseDouble(record.get("AST"));
                 double rebounds = Double.parseDouble(record.get("REB"));
                 double steals = Double.parseDouble(record.get("STL"));
+                double blocks = Double.parseDouble(record.get("BLK"));
                 int year = Integer.parseInt(record.get("SEASON"));
                 String ID = name + year;
 
-                team.putIfAbsent(ID, new Player(name,points,rebounds,steals,year));
+                team.putIfAbsent(ID, new Player(name,points,assists,rebounds,steals,year,blocks));
             }
             Gson gson = new Gson();
             response.setContentType("application/json;");
