@@ -2,6 +2,7 @@ google.charts.load('current', {'packages':['bar']});
 google.charts.setOnLoadCallback(drawChart);
 
 const selectedPlayers = new Array();
+var listId = 0;
 
 function search(){
   fetch('/search').then(response => response.json()).then((players) => {
@@ -32,30 +33,42 @@ function selectedPlayer(){
     const playerInfo = new Map(Object.entries(players));
     input = document.getElementById('searchQuery').value;
     document.getElementById('list').innerHTML= '';
-    counter = 0;
 
-    var player = document.createElement('ul');
-    player.id = 'listPlayers';
+    var player = document.getElementById('listPlayers');
     var liElement = document.createElement('li');
+    liElement.id=listId;
     liElement.innerText = input;
     var datalist = document.createElement('datalist');
-    datalist.id = 'seasons';
+    datalist.id = 'seasons'+listId;
     var season = document.createElement('input');
+    season.placeholder = 'Select a season';
     season.type = 'number';
-    season.setAttribute('list','seasons');
+    season.setAttribute('list','seasons'+listId);
+    listId++;
     const addPlayerButton = document.createElement('input');
     addPlayerButton.type = 'button';
     addPlayerButton.value = 'Add Player';
     const deletePlayerButton = document.createElement('input');
     deletePlayerButton.type = 'button';
     deletePlayerButton.value = 'Remove Player';
+    const position = document.createElement('input');
+    position.placeholder = 'choose position';
+    position.setAttribute('list','positions');
+    position.innerHTML = '<datalist id="positions">'+
+                            '<option>PG</option>'+
+                            '<option>SG</option>'+
+                            '<option>SF</option>'+
+                            '<option>PF</option>'+
+                            '<option>C</option>'+
+                          '</datalist>';
+    position.value = 'PG';
 
     //button adds the selected player to the chart
     addPlayerButton.addEventListener('click',() => {
       player ={
         id: input+season.value,
       }
-      createPlayernode(input,playerInfo.get(input).player_id,player.id);
+      createPlayernode(input,playerInfo.get(input).player_id,player.id,position.value);
       selectedPlayers.push(player);
       console.log(player.id);
       drawChart();
@@ -73,16 +86,16 @@ function selectedPlayer(){
     }
     liElement.appendChild(season);
     liElement.appendChild(datalist);
+    liElement.appendChild(position);
     liElement.appendChild(addPlayerButton);
     liElement.appendChild(deletePlayerButton);
     player.appendChild(liElement);
-    document.getElementById('selectedPlayer').appendChild(player);
 
   });
 }
 
-function createPlayernode(name,id,playerid){
-  var container  = document.getElementById('PG-container');
+function createPlayernode(name,id,playerid,pos){
+  var container  = document.getElementById(''+pos+'-container');
   var player = document.createElement('li');
   player.innerText = name;
   var url = "/images/downsize_player/"+id+".jpg"
@@ -120,22 +133,27 @@ function drawChart(){
     for(i=0;i < selectedPlayers.length;i++){
       if(i==0){
         data.addColumn('string','Stats');
-        data.addRows(3);
+        data.addRows(5);
         data.setCell(0,0,'PPG');
-        data.setCell(1,0,'REB');
-        data.setCell(2,0,'STL');
+        data.setCell(1,0,'AST');
+        data.setCell(2,0,'REB');
+        data.setCell(3,0,'STL');
+        data.setCell(4,0,'BLK');
+
       }
       if(players.has(selectedPlayers[i].id)){
         data.addColumn('number',players.get(selectedPlayers[i].id).name);
         data.setCell(0,counter,players.get(selectedPlayers[i].id).points);
-        data.setCell(1,counter,players.get(selectedPlayers[i].id).rebounds);
-        data.setCell(2,counter,players.get(selectedPlayers[i].id).steals);
+        data.setCell(1,counter,players.get(selectedPlayers[i].id).assists);
+        data.setCell(2,counter,players.get(selectedPlayers[i].id).rebounds);
+        data.setCell(3,counter,players.get(selectedPlayers[i].id).steals);
+        data.setCell(4,counter,players.get(selectedPlayers[i].id).blocks);
         counter++;
       }
 
     }
     var options = {
-      colors:['gray'],
+      //colors:['gray'],
       width: 600,
       height: 400,
       legend: { position: 'top', maxLines: 3 },
@@ -149,16 +167,15 @@ function drawChart(){
   });
 }
 
-//adds a player to the chart
-function choosePlayer(id){
-  var name = document.getElementById('player-input'+id).value;
-  var season = document.getElementById('year-input'+id).value;
-  player ={
-    id: name+season,
+function onInput() {
+  var val = document.getElementById('searchQuery').value;
+  var opts = document.getElementById('list').childNodes;
+  for (var i = 0; i < opts.length; i++) {
+    if (opts[i].value === val) {
+      selectedPlayer();
+      break;
+    }
   }
-  selectedPlayers.push(player);
-  console.log(player.id);
-  drawChart();
 }
 
 function imageExists(url){
