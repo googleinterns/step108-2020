@@ -35,7 +35,7 @@ def main():
 		chosen = [0 for i in range(WEEK_LEN)]
 		vertices = {v: [False] * WEEK_LEN for v in range(teams)}
 		edges = [Edge(match) for match in matches if match[0] == week]
-		random.shuffle(edges)
+		# random.shuffle(edges)
 		for edge in edges:
 			v1 = vertices[edge.match[1]]
 			v2 = vertices[edge.match[2]]
@@ -43,7 +43,6 @@ def main():
 			edge.color = color
 			v1[color] = v2[color] = True
 		weekly[week] = edges
-		print(chosen)
 
 	weekly = {week: sorted(weekly[week], key=lambda x: x.color) for week in weekly}
 	with open(OUT_FILE, 'w') as f:
@@ -52,11 +51,13 @@ def main():
 		for week in weekly:
 			week_arr = weekly[week]
 			for edge in week_arr:
-				if week % 2 == 0:
-					base_week = EVEN_WEEK
-				else:
-					base_week = ODD_WEEK
-				writer.writerow([WEEK_LEN*week + base_week[edge.color], edge.match[1], edge.match[2]])
+				# # Messes up the sorted property of days
+				# if week % 2 == 0:
+				# 	base_week = EVEN_WEEK
+				# else:
+				# 	base_week = ODD_WEEK
+				# writer.writerow([WEEK_LEN*week + base_week[edge.color], edge.match[1], edge.match[2]])
+				writer.writerow([WEEK_LEN * week + edge.color, edge.match[1], edge.match[2]])
 
 
 def choose_color(v1, v2, chosen):
@@ -68,14 +69,15 @@ def choose_color(v1, v2, chosen):
 	if not candidates:
 		raise AssertionError("Too many colors")
 	else:
+		# return random.choice(candidates)
 		min = float("inf")
-		ind = 0
-		for i, val in enumerate(chosen):
+		idx = 0
+		for val in candidates:
 			if val < min:
-				ind = i
+				idx = val
 				min = val
-		chosen[ind] += 1
-		return ind
+		chosen[idx] += 1
+		return idx
 
 
 if __name__ == '__main__':

@@ -24,11 +24,10 @@ NUM_IN_CONFERENCE = 15
 def team_to_conference(team):
     return team // NUM_IN_CONFERENCE
 
-
+# **** ASSUMES DAYS ARE SORTED INCREASINGLY ****
 try:
     # Avoids argv errors with unittest
     file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), sys.argv.pop())
-    print(file_name)
 except:
     print(f"usage: python {__file__} relative_path_to_schedule")
     # exit(1)
@@ -74,12 +73,15 @@ class AssignmentConstraints(unittest.TestCase):
 
     def testDayLimit(self):
         """Team plays at most one match / day"""
+        # Todo could loop through days for faster runtime, but it's already basically instant
         for team in team_d:
             for day in range(days):
                 day_cnt = 0
                 for match in team_d[team]:
                     if match.day == day:
                         day_cnt += 1
+                if day_cnt > 1:
+                    print()
                 assert day_cnt <= 1, "Team plays at most one match / day"
 
     def testHomeAway(self):
