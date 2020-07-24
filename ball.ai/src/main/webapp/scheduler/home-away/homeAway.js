@@ -34,22 +34,24 @@ function redraw() {
 
   // Set the size of the SVG element.
   svg
-    .attr("width", 2*width)
-    .attr("height", 2.25*height);
+    .attr("width", width)
+    .attr("height", height);
 
   // Scaling to make space for text
   const rect_g_width = width * 0.93;
   const rect_g_height = height;
-  let rect_g = svg.append("g")
-  rect_g.attr("transform", `translate(${width - rect_g_width}, 0)`)
+  let rect_g = svg.append("g");
+  rect_g.attr("transform", `translate(${width - rect_g_width}, 0)`);
+
+  // Rectangle margin
+  const epsilon = 1;
 
   // Move the text onto screen
   const fontsize = 15;
   let text_g = svg.append("g");
-  text_g.attr("transform", `translate(0, ${fontsize})`)
+  text_g.attr("transform", `translate(0, ${fontsize})`);
 
   // Draw text and boxes
-  const epsilon = 1
   for (let i = 0; i < teams; i++) {
     text_g.append("text")
       .attr("x", 0)
@@ -69,59 +71,6 @@ function redraw() {
         .attr("width", rect_g_width / 82 - epsilon)
         .attr("height", rect_g_height / teams - epsilon)
         .attr("fill", color);
-    }
-  }
-
-  // Draw days
-  const day_g_width = rect_g_width + width;
-  const day_g_height = height;
-  let day_g = svg.append("g");
-  day_g.attr("transform", `translate(${2*width - day_g_width}, ${height*1.25})`);
-  // Move the text onto screen
-  let d_text_g = svg.append("g");
-  d_text_g.attr("transform", `translate(0, ${fontsize + height*1.25})`)
-
-  d_num_g = svg.append("g");
-  d_num_g.attr("transform", `translate(${2*width - day_g_width}, ${height*1.25 - fontsize})`);
-	for (let i = 0; i < days; i++) {
-    d_num_g.append("text")
-      .attr("x", i * day_g_width / days)
-      .attr("y", i % 2 * fontsize / 2)
-      .attr("font-family", "sans-serif")
-      .attr("font-size", `${8}px`)
-      .attr("fill", "black")
-      .text(`${i}`);
-  }
-
-  for (let i = 0; i < teams; i++) {
-    d_text_g.append("text")
-      .attr("x", 0)
-      .attr("y", i * day_g_height / teams)
-      .attr("font-family", "sans-serif")
-      .attr("font-size", `${fontsize}px`)
-      .attr("fill", "black")
-      .text(`Team ${i}`);
-    for (let j = 0; j < days; j++) {
-      let color = "black";
-      let draw = false;
-      for (let k = 0; k < team_arr[i].length; k++) {
-        if (team_arr[i][k].day == j) {
-          draw = true;
-          if (team_arr[i][k].team2 === i) {
-            color = "red";
-          }
-          break;
-        }
-      }
-
-      if (draw) {
-        day_g.append("rect")
-          .attr("x", j * day_g_width / days)
-          .attr("y", i * day_g_height / teams)
-          .attr("width", day_g_width / days - epsilon)
-          .attr("height", day_g_height / teams - epsilon)
-          .attr("fill", color);
-      }
     }
   }
 }
