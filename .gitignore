@@ -1,0 +1,4 @@
+.DS_Store
+/ball.ai/target/
+.idea/
+*.iml
