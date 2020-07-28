@@ -38,9 +38,11 @@ def preprocess():
 		for t2 in range(TEAMS):
 			adj_matrix[t1][t2] = solver.BoolVar(f'A[{t1}][{t2}]')
 
+	# Team never plays itself
 	for t in range(TEAMS):
 		solver.Add(adj_matrix[t][t] == 0)
 
+	# Adjacency matrix is symmetrical
 	for t1 in range(TEAMS):
 		for t2 in range(t1 + 1, TEAMS):
 			solver.Add(adj_matrix[t1][t2] == adj_matrix[t2][t1])
@@ -53,27 +55,29 @@ def preprocess():
 		other_teams = [team for team in range(TEAMS) if team not in teams_in_conf]
 		solver.Add(sum(adj_matrix[t, teams_in_conf]) == 4)
 		# todo is the other side necessary?
+		# Only schedule in conference, out of division games
 		for other_team in other_teams:
 			solver.Add(adj_matrix[t][other_team] == 0)
 
 	# If a team only plays three matches, 2 home / 1 away x2 && 1 home / 2 away x2
-	# <= bool var, sums to 2
 	two_home = np.array([[None for j in range(TEAMS)] for i in range(TEAMS)])
 	for t1 in range(TEAMS):
 		for t2 in range(TEAMS):
 			two_home[t1][t2] = solver.BoolVar(f'H[{t1}][{t2}]')
 
+	# Team can only play two home games if it has games scheduled
 	for t1 in range(TEAMS):
 		for t2 in range(t1 + 1, TEAMS):
-			solver.Add(two_home[t1][t2] == two_home[t2][t1])
 			solver.Add(two_home[t1][t2] <= adj_matrix[t1][t2])
 
+	# Team has two home games against only two teams
 	for t in range(TEAMS):
 		t_div = team_to_division(t)
 		t_conf = team_to_conference(t)
 		teams_in_conf = [team for team in range(TEAMS) if
 		                 team_to_conference(team) == t_conf and team_to_division(team) != t_div]
 		solver.Add(sum(two_home[t, teams_in_conf]) == 2)
+		solver.Add(sum(two_home[teams_in_conf, t]) == 2)
 
 	print('Number of variables =', solver.NumVariables())
 	print('Number of constraints =', solver.NumConstraints())
