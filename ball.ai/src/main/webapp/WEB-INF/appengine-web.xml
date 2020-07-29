@@ -8,6 +8,6 @@
     <include path="/**" expiration="0s" />
   </static-files>
   <resource-files>
-    <include path="/players.csv"/>
-</resource-files>
+    <include path="/players.csv"/>  
+  </resource-files>
 </appengine-web-app>
