@@ -1,6 +1,8 @@
 const firstDay = d3.timeDay(new Date("2015-10-28"));
+const gamesPerTeam = 82;
 
 const svgDiv = document.getElementById("svgContainer");
+const collapseDiv = document.getElementById('filterCollapse');
 const modalTitle = document.getElementById("modalTitle");
 const modalBody = document.getElementById("modalBody");
 // Extract the width and height of the window.
@@ -8,12 +10,7 @@ const width = svgDiv.clientWidth;
 const height = svgDiv.clientHeight;
 
 const svg = d3.select(svgDiv).append("svg");
-
-// Set the size of the SVG element.
-svg
-    // .attr("viewBox", "0 0 500 500")
-    .attr("width", width)
-    .attr("height", height);
+const collapse = d3.select(collapseDiv).append("svg");
 
 let teams = [];
 let days = 0;
@@ -33,6 +30,7 @@ function loadSchedule() {
             d.team2 = teams[+d.team2]["abbrv"];
             days = Math.max(d.day, days);
         });
+        days++;
 
         // Count number of games per day
         let schedule = [];
@@ -41,6 +39,7 @@ function loadSchedule() {
             schedule.push({"date": date, "value": data.filter(d => d.day === i).length});
         }
         this.data = data;
+        this.workingSet = new Set(data);
         this.schedule = schedule;
         drawCalendar();
     });
@@ -48,7 +47,6 @@ function loadSchedule() {
 
 function drawCalendar() {
     const values = this.schedule.map(d => d.value);
-    console.log(values);
     let maxValue = Math.max(...values);
 
     const cellSize = 40;
@@ -127,9 +125,10 @@ function drawCalendar() {
         .append("title")
         .text(d => `${formatDate(d.date)}: ${d.value}`);
 
-    const legend = season
+    const legend = collapse
         .append("g")
-        .attr("transform", `translate(10, ${yearHeight + cellSize * 2})`);
+        // .attr("transform", `translate(10, ${yearHeight + cellSize * 2})`);
+        .attr("transform", `translate(10, 0)`);
 
     const rowLen = 6;
     const categories = teams.map(t => {
@@ -158,17 +157,32 @@ function drawCalendar() {
             data.selected = !selected;
             nodes[i].style.opacity = data.selected ? 1 : 0.2;
 
-            const teamDays = this.data.filter(g => g.team1 === data.abbrv).map(g => this.schedule[g.day]);
-            if (data.selected) {
-                teamDays.forEach(d => d.value++);
-            } else {
-                teamDays.forEach(d => d.value--);
-            }
+            const change = data.selected ? g => {
+                if (this.workingSet.has(g)) {
+                    return false
+                } else {
+                    return this.workingSet.add(g);
+                }
+            } : this.workingSet.delete
+            const boundChange = change.bind(this.workingSet);
+
+            // "Dirty" indices
+            const teamArr = new Array()
+            this.data.forEach(g => {
+                if (g.team1 === data.abbrv || g.team2 === data.abbrv) {
+                    if (boundChange(g)) {
+                        teamArr.push(g)
+                    }
+                }
+            })
+            const teamDays = teamArr.map(g => this.schedule[g.day]);
+            // Update number of games per day
+            data.selected ? teamDays.forEach(g => g.value++) : teamDays.forEach(g => g.value--);
             let max = 0
             for (let day in teamDays) {
                 max = Math.max(max, teamDays[day].value);
             }
-            colorFn.domain([0, max])
+            colorFn.domain([0, max + 1])
 
             season.selectAll("rect")
                 .data(teamDays, d => d.date)
@@ -178,8 +192,16 @@ function drawCalendar() {
         });
 
     // Stretch node for overflow
-    const bbox = svg.node().getBBox();
-    svg
-        .attr("width", bbox.x + bbox.width + bbox.x)
-        .attr("height",  bbox.y + bbox.height + bbox.y);
+    const svgs = [svg, collapse];
+    stretch(svgs);
+}
+
+function stretch(svgs) {
+    for (let svgIdx in svgs) {
+        const svg = svgs[svgIdx];
+        const svgBox = svg.node().getBBox();
+        svg
+            .attr("width", svgBox.x + svgBox.width + svgBox.x)
+            .attr("height",  svgBox.y + svgBox.height + svgBox.y);
+    }
 }
