@@ -1,4 +1,3 @@
-const days = 177;
 const firstDay = d3.timeDay(new Date("2015-10-28"));
 
 const svgDiv = document.getElementById("svgContainer");
@@ -17,6 +16,7 @@ svg
     .attr("height", height);
 
 let teams = [];
+let days = 0;
 d3.csv("/resources/teams.csv").then(data => {
     data.forEach(d => {
         teams.push({"abbrv": d["team_abbrev"], "name": `${d["team_name"]} ${d["team_nickname"]}`});
@@ -31,6 +31,7 @@ function loadSchedule() {
             d.day = +d.day;
             d.team1 = teams[+d.team1]["abbrv"];
             d.team2 = teams[+d.team2]["abbrv"];
+            days = Math.max(d.day, days);
         });
 
         // Count number of games per day
@@ -47,6 +48,7 @@ function loadSchedule() {
 
 function drawCalendar() {
     const values = this.schedule.map(d => d.value);
+    console.log(values);
     let maxValue = Math.max(...values);
 
     const cellSize = 40;
@@ -68,7 +70,7 @@ function drawCalendar() {
         ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"][d];
 
     const formatDate = d3.utcFormat("%x");
-    const colorFn = d3
+    let colorFn = d3
         .scaleSequential(d3.interpolateBuGn)
         .domain([0, maxValue]);
 
@@ -157,12 +159,27 @@ function drawCalendar() {
             nodes[i].style.opacity = data.selected ? 1 : 0.2;
 
             const teamDays = this.data.filter(g => g.team1 === data.abbrv).map(g => this.schedule[g.day]);
+            if (data.selected) {
+                teamDays.forEach(d => d.value++);
+            } else {
+                teamDays.forEach(d => d.value--);
+            }
+            let max = 0
+            for (let day in teamDays) {
+                max = Math.max(max, teamDays[day].value);
+            }
+            colorFn.domain([0, max])
 
             season.selectAll("rect")
                 .data(teamDays, d => d.date)
                 .transition()
                 .duration(500)
-                .attr('fill', d => data.selected ? colorFn(++d.value) : colorFn(--d.value));
+                .attr('fill', d => colorFn(d.value));
         });
 
+    // Stretch node for overflow
+    const bbox = svg.node().getBBox();
+    svg
+        .attr("width", bbox.x + bbox.width + bbox.x)
+        .attr("height",  bbox.y + bbox.height + bbox.y);
 }
