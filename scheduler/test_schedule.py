@@ -24,15 +24,13 @@ NUM_IN_CONFERENCE = 15
 def team_to_conference(team):
     return team // NUM_IN_CONFERENCE
 
-
+# **** ASSUMES DAYS ARE SORTED INCREASINGLY ****
 try:
     # Avoids argv errors with unittest
     file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), sys.argv.pop())
-    print(file_name)
 except:
     print(f"usage: python {__file__} relative_path_to_schedule")
-    exit(1)
-
+    # exit(1)
 rows = []
 teams = 0
 days = 0
@@ -70,18 +68,20 @@ class AssignmentConstraints(unittest.TestCase):
                 for match in team_d[team]:
                     if match.day == day:
                         week_cnt += 1
-                if day % 7 == 6:
-                    assert week_cnt <= 4, "Team plays at most 4 matches / week"
-                    week_cnt = 0
+                assert week_cnt <= 4, "Team plays at most 4 matches / week"
+                week_cnt = 0
 
     def testDayLimit(self):
         """Team plays at most one match / day"""
+        # Todo could loop through days for faster runtime, but it's already basically instant
         for team in team_d:
             for day in range(days):
                 day_cnt = 0
                 for match in team_d[team]:
                     if match.day == day:
                         day_cnt += 1
+                if day_cnt > 1:
+                    print()
                 assert day_cnt <= 1, "Team plays at most one match / day"
 
     def testHomeAway(self):
@@ -156,6 +156,23 @@ class AssignmentConstraints(unittest.TestCase):
                     teams_cnt[match.away_team] += 1
             assert sum(cnt == 3 for cnt in
                        teams_cnt.values()) == 4, "Team plays 3 matches against 4 teams in conference (outside of division)"
+
+    def testEnforceWeekly(self):
+        """Team only plays either home or away games in each week"""
+
+        for team in team_d:
+            week_matches = [[] for week in range(days)]
+            for match in team_d[team]:
+                week_matches[match.day].append(match)
+            for week in week_matches:
+                if len(week) > 0:
+                    is_home = week[0].day
+                    for match in week:
+                        if is_home:
+                            check_team = match.home_team
+                        else:
+                            check_team = match.away_team
+                        assert check_team == team, "Team only plays either home or away games in each week"
 
 
 if __name__ == "__main__":
