@@ -26,13 +26,11 @@ public class PlayerInfoServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         BufferedReader br = null;
-        try{
+        try {
             br = new BufferedReader(new FileReader("resources/player-seasons_per_game.csv"));
-            CSVParser records = CSVFormat.DEFAULT
-                .withFirstRecordAsHeader()
-                .parse(br);
+            CSVParser records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(br);
             Map<String, Player> team = new HashMap<>();
-            for (CSVRecord record: records){
+            for (CSVRecord record: records) {
                 String name = record.get("PLAYER_NAME");
                 double points = Double.parseDouble(record.get("PTS"));
                 double assists = Double.parseDouble(record.get("AST"));
@@ -41,20 +39,19 @@ public class PlayerInfoServlet extends HttpServlet {
                 double blocks = Double.parseDouble(record.get("BLK"));
                 int year = Integer.parseInt(record.get("SEASON"));
                 String ID = name + year;
-
-                team.putIfAbsent(ID, new Player(name,points,assists,rebounds,steals,year,blocks));
+                team.putIfAbsent(ID, new Player(name, points, assists, rebounds, steals, year, blocks));
             }
             Gson gson = new Gson();
             response.setContentType("application/json;");
             response.getWriter().println(gson.toJson(team));
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            try{
+            try {
                 if(br != null){
                     br.close();
                 }
-            }catch (IOException ex){
+            } catch (IOException ex) {
                 ex.printStackTrace();
             }
         }
