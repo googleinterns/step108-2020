@@ -2,3 +2,8 @@
 /ball.ai/target/
 .idea/
 *.iml
+
+src/main/
+.classpath
+.factorypath
+.project
