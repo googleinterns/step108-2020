@@ -1,14 +1,22 @@
-package main.java.com.google.sps.data;
+package com.google.sps.data;
+
+import java.util.List;
+import java.util.ArrayList;
 
 public class PlayerInfo {
-    private String first_name, last_name;
-    private int points,rebounds,steals;
+    private String name;
+    private int player_id;
+    private List<Integer> seasonsPlayed = new ArrayList<Integer>();
+    private List<String> positionsPlayed = new ArrayList<String>();
 
-    public PlayerInfo(String first_name, String last_name, int points, int rebounds, int steals){
-        this.first_name = first_name;
-        this.last_name = last_name;
-        this.points = points;
-        this.rebounds = rebounds;
-        this.steals = steals;
+    public PlayerInfo(String name, int player_id, int year, List<String> positionsPlayed){
+        this.name = name;
+        this.player_id = player_id;
+        addYear(year);
+        this.positionsPlayed = positionsPlayed;
+    }
+    
+    public void addYear(int year){
+        seasonsPlayed.add(year);
     }
 }

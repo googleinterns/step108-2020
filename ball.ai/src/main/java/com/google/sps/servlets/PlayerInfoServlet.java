@@ -1,13 +1,17 @@
 package com.google.sps.servlets;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Scanner;
+import com.google.sps.data.Player;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.FileInputStream;
-import java.util.List;
-import java.net.URL;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import java.util.Map;
+import java.util.HashMap;
+import java.lang.Double;
+
+import com.google.gson.Gson;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -18,21 +22,38 @@ import javax.servlet.http.HttpServletResponse;
 public class PlayerInfoServlet extends HttpServlet {
 
 
-    //reads in csv file of players and prints it in the servlet
+    //reads in csv file of players and converts it to json
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.setContentType("text/html");
-        String fileName = "players.csv";
-        File file = new File(fileName);
-        try{
-            Scanner inputStream = new Scanner(file);
-            while(inputStream.hasNext()){
-                String data = inputStream.next();
-                response.getWriter().println(data);
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader("resources/player-seasons_per_game.csv"));
+            CSVParser records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(br);
+            Map<String, Player> team = new HashMap<>();
+            for (CSVRecord record: records) {
+                String name = record.get("PLAYER_NAME");
+                double points = Double.parseDouble(record.get("PTS"));
+                double assists = Double.parseDouble(record.get("AST"));
+                double rebounds = Double.parseDouble(record.get("REB"));
+                double steals = Double.parseDouble(record.get("STL"));
+                double blocks = Double.parseDouble(record.get("BLK"));
+                int year = Integer.parseInt(record.get("SEASON"));
+                String ID = name + year;
+                team.putIfAbsent(ID, new Player(name, points, assists, rebounds, steals, year, blocks));
             }
-            inputStream.close();
-        } catch (FileNotFoundException e){
+            Gson gson = new Gson();
+            response.setContentType("application/json;");
+            response.getWriter().println(gson.toJson(team));
+        } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if(br != null){
+                    br.close();
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
         
     }
