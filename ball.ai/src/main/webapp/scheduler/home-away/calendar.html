@@ -28,12 +28,34 @@
   </style>
 </head>
 <body>
+<!-- Navigation -->
+<nav class="navbar navbar-light bg-light static-top">
+  <div class="container">
+    <a class="navbar-brand" href="#">ball.ai</a>
+    <div>
+      <a class="btn btn-primary" href="teamcreation.html">Build</a>
+      <a class="btn btn-primary disabled" href="schedule.html">Schedule</a>
+      <a class="btn btn-primary" href="predict.html">Simulate</a>
+    </div>
+  </div>
+</nav>
 <div>
-  <div id="svgContainer"></div>
+  <ul class="nav nav-tabs">
+    <li class="nav-item"><a class="nav-link active" data-toggle="tab" id="svgToggle1" href="#svgContainer" onclick="swapCalendar()">Season Schedule</a></li>
+    <li class="nav-item"><a class="nav-link" data-toggle="tab" id="svgToggle2" href="#svgContainer" onclick="swapCalendar()">Team Schedule</a></li>
+  </ul>
+
+  <div class="tab-content">
+    <div id="svgContainer"></div>
+    <div id="menu2" class="tab-pane fade">
+      <h3>Menu 2</h3>
+      <p>Some content in menu 2.</p>
+    </div>
+  </div>
   <!-- Legend -->
   <p>
     <a class="btn btn-primary" data-toggle="collapse" href="#filterCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
-      Show/Hide
+      Filters
     </a>
     <button class="btn btn-primary" onclick="Array.from(document.getElementsByTagName('image')).forEach(d => d.dispatchEvent(new MouseEvent('click')))">Toggle all</button>
   </p>
