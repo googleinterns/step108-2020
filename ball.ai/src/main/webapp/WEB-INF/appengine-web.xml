@@ -8,6 +8,9 @@
     <include path="/**" expiration="0s" />
   </static-files>
   <resource-files>
-    <include path="/players.csv"/>  
+    <include path="/player_positions.json"/>
+  </resource-files>
+  <resource-files>
+    <include path="/player-seasons_per_game.csv"/>
   </resource-files>
 </appengine-web-app>
