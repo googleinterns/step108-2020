@@ -7,14 +7,18 @@ const urlYear = url.searchParams.get("year");
 const gamesPerTeam = 82;
 const emptySet = new Set();
 let currentTeam;
-let currentYear = urlYear ? new Number(urlYear) : new Number(2013);
-//= d3.timeDay(new Date("2015-10-28"));
+let currentYear = urlYear ? parseInt(urlYear) : parseInt(2013);
 let firstDays;
 let firstDay;
 d3.json("/resources/past_schedules/first_days.json").then(data => {
     firstDays = data;
     firstDay = d3.timeDay(new Date(firstDays[currentYear]));
 })
+
+let wins;
+function loadWins() {
+    return d3.json(`/resources/past_schedules/wl/${currentYear}.json`).then(data => wins = data);
+}
 
 const buttonDiv = document.getElementById("selects");
 const svgDiv = document.getElementById("svgContainer");
@@ -51,15 +55,16 @@ d3.csv("/resources/teams.csv").then(data => {
         teams.push({"abbrv": d["team_abbrev"], "name": `${d["team_name"]} ${d["team_nickname"]}`});
         teamAbbrv[d["team_abbrev"]] = `${d["team_name"]} ${d["team_nickname"]}`;
     });
-    currentTeam = validUrlTeam ? teams.filter(t => t.abbrv === urlTeam)[0] : teams[0];
+    currentTeam = validUrlTeam ? teams.filter(t => t.abbrv === urlTeam)[0] : new Object(teams[0]);
     drawButtons();
-    loadSchedule(`/resources/past_schedules/${currentYear}.csv`)
+    loadWins()
+        .then(d => loadSchedule(`/resources/past_schedules/${currentYear}.csv`))
         .then(drawCalendar)
         .then(drawFilter);
 });
 
 function loadSchedule(path) {
-    firstDay = d3.timeDay(new Date(firstDays[currentYear.valueOf()]));
+    firstDay = d3.timeDay(new Date(firstDays[currentYear]));
     return d3.csv(path).then(data => {
         days = 0;
         data.forEach(d => {
@@ -72,24 +77,17 @@ function loadSchedule(path) {
         days++;
 
         // Count number of games per day
-        const schedule = daySchedule(data, emptySet);
         scheduleData = data;
+        scheduleData.forEach((d, i) => d.win = wins[i]);
         workingSetAll = new Set(data);
-        finalSchedule = schedule;
-        // drawFilter(drawCalendar());
-        // drawTeamSchedule(teams[0]);
+        finalSchedule = daySchedule(data, emptySet);
     });
 }
 
 function drawButtons() {
-    // const yearDiv = d3.select(yearDiv).append("span")
-    // .attr("width", "100%")
-    // .attr("height", "100%")
-    // .attr("x", 0)
-    // .attr("y", -40)
     const buttonSelect = d3.select(buttonDiv);
 
-    function addButton(id, data, defaultValue, textFn, updateVar, updateFn) {
+    function addButton(id, data, defaultValue, textFn, updateFn) {
         const select = buttonSelect.append("li")
             .attr("class", "nav-item");
         const button = select.append("button")
@@ -129,28 +127,26 @@ function drawButtons() {
                 button.text(textFn(d));
                 nodes[i].style.backgroundColor = "#d3d3d3"; // Gray
                 nodes[i].classList.add("disabled");
-                updateFn(updateVar, d);
+                updateFn(d);
             })
             .text(textFn);
     }
 
     const defaultYear = urlYear ? urlYear : "Select year";
-    addButton("selectYear", d3.range(2013, 2019), defaultYear, d => d, currentYear, (old, next) => {
-        old.valueOf = () => parseInt(next);
-        loadSchedule(`/resources/past_schedules/${next}.csv`)
+    addButton("selectYear", d3.range(2013, 2019), defaultYear, d => d, d => {
+        currentYear = parseInt(d);
+        loadWins()
+            .then(() => loadSchedule(`/resources/past_schedules/${d}.csv`))
             .then(redraw);
-        return old
     });
-    addButton("selectTeam", teams, currentTeam.name, t => t.name, currentTeam, (old, next) => {
-        Object.assign(old, next);
-        loadSchedule(`/resources/past_schedules/${next}.csv`)
-            .then(redraw);
-        return old;
+    addButton("selectTeam", teams, currentTeam.name, t => t.name, d => {
+        currentTeam = d;
+        redraw();
     });
 
 }
 
-// Could save memory by separating date and value + speed up w/o filter() but it's not significant
+// Could save memory by separating date and value && speed up w/o filter() but it's not significant
 function daySchedule(data, teams) {
     let schedule = [];
     for (let i = 0; i < days; i++) {
@@ -163,7 +159,6 @@ function daySchedule(data, teams) {
 
 function drawCalendar() {
     clear(svgDiv)
-
     const values = finalSchedule.map(d => d.value);
     let maxValue = Math.max(...values);
 
@@ -185,69 +180,47 @@ function drawCalendar() {
         .attr("font-size", 12)
         .text(formatDay);
 
-    season
-        .append("g")
+    season.append("g")
         .selectAll("rect")
-        .data(finalSchedule, d => d.index)
-        .join(enter => enter.append("rect")
-                .attr("width", (d, i, nodes) => {
-                    return cellSize - 1.5
-                })
-                .attr("height", cellSize - 1.5)
-                .attr("x", d => d3.utcSunday.count(firstDay, d.date) * cellSize + 10)
-                .attr("y", d => d.date.getUTCDay() * cellSize + 0.5)
-                .attr("data-toggle", "modal")
-                .attr("data-target", "#scheduleModal")
-                .on("click", data => {
-                    while (modalBody.firstChild) {
-                        modalBody.removeChild(modalBody.lastChild);
-                    }
+        .data(finalSchedule, d => d.date)
+        .join("rect")
+        .attr("width", cellSize - 1.5)
+        .attr("height", cellSize - 1.5)
+        .attr("x", d => d3.utcSunday.count(firstDay, d.date) * cellSize + 10)
+        .attr("y", d => d.date.getUTCDay() * cellSize + 0.5)
+        .attr("fill", "white")
+        .attr("data-toggle", "modal")
+        .attr("data-target", "#scheduleModal")
+        .on("click", data => {
+            while (modalBody.firstChild) {
+                modalBody.removeChild(modalBody.lastChild);
+            }
 
-                    modalTitle.innerText = formatDate(data.date);
-                    const day = d3.timeDay.count(firstDay, data.date);
-                    const games = scheduleData.filter(d => d.day === day);
-                    const formatted = games.map(d => `${d.team1} vs. ${d.team2}`)
-                    for (let i = 0; i < formatted.length; i++) {
-                        let li = document.createElement("li");
-                        li.innerText = formatted[i];
-                        li.classList.add("list-group-item");
-                        li.onclick = e => {
-                            for (let j = 0; j < modalBody.children.length; j++) {
-                                let classes = modalBody.children[j].classList;
-                                if (classes.contains("active")) {
-                                    classes.remove("active");
-                                    break;
-                                }
-                            }
-                            e.target.classList.add("active");
+            modalTitle.innerText = formatDate(data.date);
+            const day = d3.timeDay.count(firstDay, data.date);
+            const games = scheduleData.filter(d => d.day === day);
+            const formatted = games.map(d => `${d.team1} vs. ${d.team2}`)
+            for (let i = 0; i < formatted.length; i++) {
+                let li = document.createElement("li");
+                li.innerText = formatted[i];
+                li.classList.add("list-group-item");
+                li.onclick = e => {
+                    for (let j = 0; j < modalBody.children.length; j++) {
+                        let classes = modalBody.children[j].classList;
+                        if (classes.contains("active")) {
+                            classes.remove("active");
+                            break;
                         }
-                        modalBody.appendChild(li);
                     }
-                })
-                .call(enter => enter.transition()
-                    .duration(500)
-                    .attr("fill", d => {
-                        return colorFn(d.value)
-                    })),
-            // .call(enter => enter.append("title")
-            //     .text(d => `${formatDate(d.date)}: ${d.value}`)
-            // ),
-            update => update.call((update, d) => {
-                    update
-                        .transition()
-                        .duration(500)
-                        .attr("fill", d => {
-                            return colorFn(d.value);
-                        })
+                    e.target.classList.add("active");
                 }
-            ),
-            exit => exit.call(exit => exit.transition()
-                .duration(500)
-                .style('opacity', 0)
-                .on('end', function() {
-                    d3.select(this).remove();
-                }))
-        );
+                modalBody.appendChild(li);
+            }})
+        .call(selection => selection.transition()
+            .duration(1000)
+            .attr("fill", d => colorFn(d.value)))
+        .append("title")
+        .text(d => `${formatDate(d.date)}: ${d.value}`);
 
     // Stretch node for overflow
     stretch(svg);
@@ -294,6 +267,11 @@ function drawFilter(schedule) {
 
     // Handle filtering for each schedule variant
     function legendClick(data, i, nodes) {
+        if (!isActive(svgToggle1) && data.abbrv == currentTeam.abbrv) {
+            // Don't disable all the teams
+            return;
+        }
+
         const {selected} = data;
         data.selected = !selected;
         nodes[i].style.opacity = data.selected ? 1 : 0.2;
@@ -365,9 +343,13 @@ function drawFilter(schedule) {
     stretch(collapse);
 }
 
-function drawTeamSchedule(team) {
+function drawTeamSchedule() {
     clear(svgDiv);
-    const teamSchedule = scheduleData.filter(d => d.team1 === team.abbrv || d.team2 === team.abbrv);
+    const teamSchedule = scheduleData.filter(d => d.team1 === currentTeam.abbrv || d.team2 === currentTeam.abbrv);
+    const winColor = game => isWinner(game, currentTeam) ? "green" : "red";
+    const colors = teamSchedule.map(winColor);
+    const nWins = colors.filter(g => g === "green").length;
+    const nLosses = colors.filter(g => g === "red").length;
     const rows = 4;
     const baseCellSize = 40;
     const cellSize = baseCellSize * 7 / rows;
@@ -382,14 +364,14 @@ function drawTeamSchedule(team) {
         .attr("text-anchor", "end")
         .attr("font-size", 16)
         .attr("font-weight", 550)
-        .text(team.abbrv);
+        .text(currentTeam.abbrv);
 
     schedule
         .append("g")
         .selectAll("image")
         .data(teamSchedule)
         .join("image")
-        .attr("xlink:href", d => `/resources/logos/${teamAbbrv[neqTeam(d, team)]}.png`)
+        .attr("xlink:href", d => `/resources/logos/${teamAbbrv[neqTeam(d, currentTeam)]}.png`)
         .attr("width", cellSize - 1.5)
         .attr("height", cellSize - 1.5)
         .attr("x", (d, i) => (i % Math.ceil(gamesPerTeam / rows)) * cellSize + 0.5)
@@ -397,9 +379,7 @@ function drawTeamSchedule(team) {
         .append("title")
         .text((d, i) => `Game ${i}`);
 
-    const winColor = game => {
-        return game.team1 === team.abbrv ? "green" : "red";
-    }
+
     schedule
         .append("g")
         .selectAll("rect")
@@ -455,7 +435,15 @@ function clear(node) {
 }
 
 function neqTeam(game, team) {
-    return game.team1 === team.abbrv ? game.team2 : game.team1
+    return isHome(game, team) ? game.team2 : game.team1
+}
+
+function isHome(game, team) {
+    return game.team1 === team.abbrv;
+}
+
+function isWinner(game, team) {
+    return isHome(game, team) ? game.win : !game.win;
 }
 
 function isActive(ele) {
