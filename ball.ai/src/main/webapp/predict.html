@@ -4,168 +4,147 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
-
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="js/h2h_jquery.js"></script>
-    <script src="js/neural_net_inference.js"></script>
-    <script src="js/prepare_data_for_model.js"></script>
+    <meta name="description" content="">
+    <meta name="author" content="">
     <title>Head to Head Tool</title>
+
+    <!-- Tensorflow -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+
+    <!-- Bootstrap core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom fonts for template -->
+    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
+    <link href="vendor/simple-line-icons/css/simple-line-icons.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+
+    <!-- Custom styles for this template -->
+    <link href="css/landing-page.min.css" rel="stylesheet">
+
+    <!-- jquery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    
+    <!-- Custom js -->
+    <script src="js/predict.js"></script>
+
+     <!-- favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
+    <link rel="manifest" href="homepage_extra/site.webmanifest">
+    
   </head>
-  <body onload="loadData();allOkay();">
-    <button onclick="test()" disabled id="myButton">Test</button>
+  <body onload="loadData()">
+    <!-- Navigation -->
+    <nav class="navbar navbar-light bg-light static-top">
+        <div class="container">
+        <a class="navbar-brand" href="index.html">ball.ai</a>
+        <div>
+            <a class="btn btn-primary" href="teamcreation.html">Build</a>
+            <a class="btn btn-primary" href="schedule.html">Schedule</a>
+            <a class="btn btn-primary" href="predict.html">Simulate</a>
+        </div>
+        </div>
+    </nav>
+
+      <!-- Masthead -->
+  <header class="masthead-predict text-white text-center">
+    <div class="overlay"></div>
     <div class="container">
-        <h1>Welcome to ball.ai's Head to Head Tool</h1>
-        <h2>Using it, you can predict the outcome of any game between any set of players</h2>
+      <div class="row">
+        <div class="col-xl-9 mx-auto">
+          <h1 class="mb-5">Head to Head Prediction</h1>
+          <h3 class="mb-5">Pick your players, pick your years, and check out who wins!</h3>
+        </div>
+        <!-- Email Sign-up
+        <div class="col-md-10 col-lg-8 col-xl-7 mx-auto">
+          <form>
+            <div class="form-row">
+              <div class="col-12 col-md-9 mb-2 mb-md-0">
+                <input type="email" class="form-control form-control-lg" placeholder="Enter your email...">
+              </div>
+              <div class="col-12 col-md-3">
+                <button type="submit" class="btn btn-block btn-lg btn-primary">Sign up!</button>
+              </div>
+            </div>
+          </form>
+        </div>-->
+      </div>
+    </div>
+  </header>
+
+
+    <!-- Select players -->  
+    <div class="container my-2">
         <div class="row flex-row d-flex justify-content-center my-5">
             <div class="col d-flex flex-column justify-content-around align-items-left">
                 <h4> Home Team </h4>
 
                 <div class = "flex-row d-flex align-items-center">
                     <div class="dropdown">
-                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="hm_g_1_year" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="hm_g_1_year" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="loadYears('hm_g_1_')" value="">
                             Year
                         </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item" href="#">2003</a>
-                            <a class="dropdown-item" href="#">2004</a>
-                            <a class="dropdown-item" href="#">2005</a>
-                            <a class="dropdown-item" href="#">2006</a>
-                            <a class="dropdown-item" href="#">2007</a>
-                            <a class="dropdown-item" href="#">2008</a>
-                            <a class="dropdown-item" href="#">2009</a>
-                            <a class="dropdown-item" href="#">2010</a>
-                            <a class="dropdown-item" href="#">2011</a>
-                            <a class="dropdown-item" href="#">2012</a>
-                            <a class="dropdown-item" href="#">2013</a>
-                            <a class="dropdown-item" href="#">2014</a>
-                            <a class="dropdown-item" href="#">2015</a>
-                            <a class="dropdown-item" href="#">2016</a>
-                            <a class="dropdown-item" href="#">2017</a>
-                            <a class="dropdown-item" href="#">2018</a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="hm_g_1_year_dropdown">
                         </div>
                     </div>
-                    <div class = "mx-2" id="hm_g_1_name">
-                        Stephen Curry
+                    <div class = "mx-2" >
+                        <input type="text" class="playername-input" id="hm_g_1_name" placeholder="Stephen Curry">
                     </div>
                 </div>
 
                 <div class = "flex-row d-flex align-items-center">
                     <div class="dropdown">
-                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="hm_g_2_year" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="loadYears('hm_g_2_')" value="">
                             Year
                         </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item" href="#">2003</a>
-                            <a class="dropdown-item" href="#">2004</a>
-                            <a class="dropdown-item" href="#">2005</a>
-                            <a class="dropdown-item" href="#">2006</a>
-                            <a class="dropdown-item" href="#">2007</a>
-                            <a class="dropdown-item" href="#">2008</a>
-                            <a class="dropdown-item" href="#">2009</a>
-                            <a class="dropdown-item" href="#">2010</a>
-                            <a class="dropdown-item" href="#">2011</a>
-                            <a class="dropdown-item" href="#">2012</a>
-                            <a class="dropdown-item" href="#">2013</a>
-                            <a class="dropdown-item" href="#">2014</a>
-                            <a class="dropdown-item" href="#">2015</a>
-                            <a class="dropdown-item" href="#">2016</a>
-                            <a class="dropdown-item" href="#">2017</a>
-                            <a class="dropdown-item" href="#">2018</a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="hm_g_2_year_dropdown">
                         </div>
                     </div>
                     <div class = "mx-2">
-                        Ray Allen
+                         <input type="text" class="playername-input" id="hm_g_2_name" placeholder="Ray Allen">
                     </div>
                 </div>
 
                 <div class = "flex-row d-flex align-items-center">
                     <div class="dropdown">
-                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="hm_f_1_year" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="loadYears('hm_f_1_')" value="">
                             Year
                         </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item" href="#">2003</a>
-                            <a class="dropdown-item" href="#">2004</a>
-                            <a class="dropdown-item" href="#">2005</a>
-                            <a class="dropdown-item" href="#">2006</a>
-                            <a class="dropdown-item" href="#">2007</a>
-                            <a class="dropdown-item" href="#">2008</a>
-                            <a class="dropdown-item" href="#">2009</a>
-                            <a class="dropdown-item" href="#">2010</a>
-                            <a class="dropdown-item" href="#">2011</a>
-                            <a class="dropdown-item" href="#">2012</a>
-                            <a class="dropdown-item" href="#">2013</a>
-                            <a class="dropdown-item" href="#">2014</a>
-                            <a class="dropdown-item" href="#">2015</a>
-                            <a class="dropdown-item" href="#">2016</a>
-                            <a class="dropdown-item" href="#">2017</a>
-                            <a class="dropdown-item" href="#">2018</a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="hm_f_1_year_dropdown">
                         </div>
                     </div>
-                    <div class = "mx-2">
-                        Kevin Durant
+                    <div class = "mx-2" >
+                         <input type="text" class="playername-input" id="hm_f_1_name" placeholder="Kevin Durant">
                     </div>
                 </div>
         
                 <div class = "flex-row d-flex align-items-center">
                     <div class="dropdown">
-                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="hm_f_2_year" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="loadYears('hm_f_2_')" value="">
                             Year
                         </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item" href="#">2003</a>
-                            <a class="dropdown-item" href="#">2004</a>
-                            <a class="dropdown-item" href="#">2005</a>
-                            <a class="dropdown-item" href="#">2006</a>
-                            <a class="dropdown-item" href="#">2007</a>
-                            <a class="dropdown-item" href="#">2008</a>
-                            <a class="dropdown-item" href="#">2009</a>
-                            <a class="dropdown-item" href="#">2010</a>
-                            <a class="dropdown-item" href="#">2011</a>
-                            <a class="dropdown-item" href="#">2012</a>
-                            <a class="dropdown-item" href="#">2013</a>
-                            <a class="dropdown-item" href="#">2014</a>
-                            <a class="dropdown-item" href="#">2015</a>
-                            <a class="dropdown-item" href="#">2016</a>
-                            <a class="dropdown-item" href="#">2017</a>
-                            <a class="dropdown-item" href="#">2018</a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="hm_f_2_year_dropdown">
                         </div>
                     </div>
                     <div class = "mx-2">
-                        Tim Duncan
+                        <input type="text" class="playername-input" id="hm_f_2_name" placeholder="Tim Duncan">
                     </div>
                 </div>
 
                 <div class = "flex-row d-flex align-items-center">
                     <div class="dropdown">
-                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="hm_c_year" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="loadYears('hm_c_')" value="">
                             Year
                         </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item" href="#">2003</a>
-                            <a class="dropdown-item" href="#">2004</a>
-                            <a class="dropdown-item" href="#">2005</a>
-                            <a class="dropdown-item" href="#">2006</a>
-                            <a class="dropdown-item" href="#">2007</a>
-                            <a class="dropdown-item" href="#">2008</a>
-                            <a class="dropdown-item" href="#">2009</a>
-                            <a class="dropdown-item" href="#">2010</a>
-                            <a class="dropdown-item" href="#">2011</a>
-                            <a class="dropdown-item" href="#">2012</a>
-                            <a class="dropdown-item" href="#">2013</a>
-                            <a class="dropdown-item" href="#">2014</a>
-                            <a class="dropdown-item" href="#">2015</a>
-                            <a class="dropdown-item" href="#">2016</a>
-                            <a class="dropdown-item" href="#">2017</a>
-                            <a class="dropdown-item" href="#">2018</a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="hm_c_year_dropdown">
                         </div>
                     </div>
                     <div class = "mx-2">
-                        Joel Embiid
+                        <input type="text" class="playername-input" id="hm_c_name" placeholder="Joel Embiid">
                     </div>
                 </div>
             </div>
@@ -183,159 +162,129 @@
                 <h4> Away Team </h4>
 
                 <div class = "flex-row d-flex align-items-center">
-                    <div class = "mx-2">
-                        Avery Bradley
+                    <div class = "mx-2" >
+                        <input type="text" class="playername-input" id="aw_g_1_name" placeholder="Avery Bradley">
                     </div>
                     <div class="dropdown">
-                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="aw_g_1_year" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="loadYears('aw_g_1_')" value="">
                             Year
                         </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item" href="#">2003</a>
-                            <a class="dropdown-item" href="#">2004</a>
-                            <a class="dropdown-item" href="#">2005</a>
-                            <a class="dropdown-item" href="#">2006</a>
-                            <a class="dropdown-item" href="#">2007</a>
-                            <a class="dropdown-item" href="#">2008</a>
-                            <a class="dropdown-item" href="#">2009</a>
-                            <a class="dropdown-item" href="#">2010</a>
-                            <a class="dropdown-item" href="#">2011</a>
-                            <a class="dropdown-item" href="#">2012</a>
-                            <a class="dropdown-item" href="#">2013</a>
-                            <a class="dropdown-item" href="#">2014</a>
-                            <a class="dropdown-item" href="#">2015</a>
-                            <a class="dropdown-item" href="#">2016</a>
-                            <a class="dropdown-item" href="#">2017</a>
-                            <a class="dropdown-item" href="#">2018</a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="aw_g_1_year_dropdown">
                         </div>
                     </div>
                 </div>
 
                 <div class = "flex-row d-flex align-items-center">
                     <div class = "mx-2">
-                        Klay Thompson
+                        <input type="text" class="playername-input" id="aw_g_2_name" placeholder="Klay Thompson">
                     </div>
                     <div class="dropdown">
-                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="aw_g_2_year" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="loadYears('aw_g_2_')" value="">
                             Year
                         </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item" href="#">2003</a>
-                            <a class="dropdown-item" href="#">2004</a>
-                            <a class="dropdown-item" href="#">2005</a>
-                            <a class="dropdown-item" href="#">2006</a>
-                            <a class="dropdown-item" href="#">2007</a>
-                            <a class="dropdown-item" href="#">2008</a>
-                            <a class="dropdown-item" href="#">2009</a>
-                            <a class="dropdown-item" href="#">2010</a>
-                            <a class="dropdown-item" href="#">2011</a>
-                            <a class="dropdown-item" href="#">2012</a>
-                            <a class="dropdown-item" href="#">2013</a>
-                            <a class="dropdown-item" href="#">2014</a>
-                            <a class="dropdown-item" href="#">2015</a>
-                            <a class="dropdown-item" href="#">2016</a>
-                            <a class="dropdown-item" href="#">2017</a>
-                            <a class="dropdown-item" href="#">2018</a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="aw_g_2_year_dropdown">
                         </div>
                     </div>
                 </div>
 
                 <div class = "flex-row d-flex align-items-center">
                     <div class = "mx-2">
-                        LeBron James
+                        <input type="text" class="playername-input" id="aw_f_1_name" placeholder="LeBron James">
                     </div>
                     <div class="dropdown">
-                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="aw_f_1_year" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="loadYears('aw_f_1_')" value="">
                             Year
                         </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item" href="#">2003</a>
-                            <a class="dropdown-item" href="#">2004</a>
-                            <a class="dropdown-item" href="#">2005</a>
-                            <a class="dropdown-item" href="#">2006</a>
-                            <a class="dropdown-item" href="#">2007</a>
-                            <a class="dropdown-item" href="#">2008</a>
-                            <a class="dropdown-item" href="#">2009</a>
-                            <a class="dropdown-item" href="#">2010</a>
-                            <a class="dropdown-item" href="#">2011</a>
-                            <a class="dropdown-item" href="#">2012</a>
-                            <a class="dropdown-item" href="#">2013</a>
-                            <a class="dropdown-item" href="#">2014</a>
-                            <a class="dropdown-item" href="#">2015</a>
-                            <a class="dropdown-item" href="#">2016</a>
-                            <a class="dropdown-item" href="#">2017</a>
-                            <a class="dropdown-item" href="#">2018</a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="aw_f_1_year_dropdown">
                         </div>
                     </div>
                 </div>
         
                 <div class = "flex-row d-flex align-items-center">
                     <div class = "mx-2">
-                        Kevin Garnett
+                        <input type="text" class="playername-input" id="aw_f_2_name" placeholder="Kevin Garnett">
                     </div>
                     <div class="dropdown">
-                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="aw_f_2_year" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="loadYears('aw_f_2_')" value="">
                             Year
                         </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item" href="#">2003</a>
-                            <a class="dropdown-item" href="#">2004</a>
-                            <a class="dropdown-item" href="#">2005</a>
-                            <a class="dropdown-item" href="#">2006</a>
-                            <a class="dropdown-item" href="#">2007</a>
-                            <a class="dropdown-item" href="#">2008</a>
-                            <a class="dropdown-item" href="#">2009</a>
-                            <a class="dropdown-item" href="#">2010</a>
-                            <a class="dropdown-item" href="#">2011</a>
-                            <a class="dropdown-item" href="#">2012</a>
-                            <a class="dropdown-item" href="#">2013</a>
-                            <a class="dropdown-item" href="#">2014</a>
-                            <a class="dropdown-item" href="#">2015</a>
-                            <a class="dropdown-item" href="#">2016</a>
-                            <a class="dropdown-item" href="#">2017</a>
-                            <a class="dropdown-item" href="#">2018</a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="aw_f_2_year_dropdown">
                         </div>
                     </div>
                 </div>
 
                 <div class = "flex-row d-flex align-items-center">
                     <div class = "mx-2">
-                        Dwight Howard
+                        <input type="text" class="playername-input" id="aw_c_name" placeholder="Dwight Howard">
                     </div>
                     <div class="dropdown">
-                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="aw_c_year" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="loadYears('aw_c_')" value="">
                             Year
                         </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item" href="#">2003</a>
-                            <a class="dropdown-item" href="#">2004</a>
-                            <a class="dropdown-item" href="#">2005</a>
-                            <a class="dropdown-item" href="#">2006</a>
-                            <a class="dropdown-item" href="#">2007</a>
-                            <a class="dropdown-item" href="#">2008</a>
-                            <a class="dropdown-item" href="#">2009</a>
-                            <a class="dropdown-item" href="#">2010</a>
-                            <a class="dropdown-item" href="#">2011</a>
-                            <a class="dropdown-item" href="#">2012</a>
-                            <a class="dropdown-item" href="#">2013</a>
-                            <a class="dropdown-item" href="#">2014</a>
-                            <a class="dropdown-item" href="#">2015</a>
-                            <a class="dropdown-item" href="#">2016</a>
-                            <a class="dropdown-item" href="#">2017</a>
-                            <a class="dropdown-item" href="#">2018</a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="aw_c_year_dropdown">
                         </div>
                     </div>
                     
                 </div>
-            </div>
-        <!-- Big col ends here -->      
+            </div>    
         </div>  
+
+        <div class="mt-2 mb-5 d-flex flex-column align-items-center">
+            <button onclick="simulate()" disabled id="simButton">Loading Simulation...</button>
+        </div>
+        
+        <div id = "result-display-text-div" class="d-flex flex-column align-items-center">
+                <h4> Predicted Outcome: </h4>
+        </div>
+
+        <div class="progress"  id = "progress-bar-div" style="height: 40px;"> 
+            <div class="progress-bar bg-info" style="width: 57.9%; min-width: 20px;font-size:20px;" id = "progress-bar-home">
+                57.9% Home
+            </div>
+            <div class="progress-bar bg-danger" style="width: 42.1%; min-width: 20px;font-size:20px;" id = "progress-bar-away">
+                42.1% Away
+            </div>
+        </div>
+
     </div>
 
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+    
+
+    <!-- Footer -->
+  <footer class="footer bg-light fixed-bottom">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-6 h-100 text-center text-lg-left my-auto">
+          <ul class="list-inline mb-2">
+            <li class="list-inline-item">
+              <a href="#">About</a>
+            </li>
+            <li class="list-inline-item">&sdot;</li>
+            <li class="list-inline-item">
+              <a href="mailto:diegoesc@google.com,brandonkj@google.com,jeremyweiss@google.com">Contact</a>
+            </li>
+          <p class="text-muted small mb-4 mb-lg-0">&copy; ball.ai 2020. All Rights Reserved.</p>
+        </div>
+        <div class="col-lg-6 h-100 text-center text-lg-right my-auto">
+          <ul class="list-inline mb-0">
+            <li class="list-inline-item mr-3">
+              <a href="https://github.com/googleinterns/step108-2020">
+                <i class="fab fa-github fa-2x fa-fw"></i>
+              </a>
+            </li>
+            <li class="list-inline-item">
+              <a href="https://www.instagram.com/google/?hl=en">
+                <i class="fab fa-instagram fa-2x fa-fw"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
