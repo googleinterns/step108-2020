@@ -1,13 +1,22 @@
 // ?players={}
 
-var url = new URL(window.location.href);
-var urlTeam = url.searchParams.get("team");
+const url = new URL(window.location.href);
+const urlTeam = url.searchParams.get("team");
+const urlYear = url.searchParams.get("year");
 
-const firstDay = d3.timeDay(new Date("2015-10-28"));
 const gamesPerTeam = 82;
 const emptySet = new Set();
 let currentTeam;
+let currentYear = urlYear ? new Number(urlYear) : new Number(2013);
+//= d3.timeDay(new Date("2015-10-28"));
+let firstDays;
+let firstDay;
+d3.json("/resources/past_schedules/first_days.json").then(data => {
+    firstDays = data;
+    firstDay = d3.timeDay(new Date(firstDays[currentYear]));
+})
 
+const buttonDiv = document.getElementById("selects");
 const svgDiv = document.getElementById("svgContainer");
 const collapseDiv = document.getElementById('filterCollapse');
 const modalTitle = document.getElementById("modalTitle");
@@ -24,6 +33,8 @@ const collapse = d3.select(collapseDiv).append("svg");
 
 let colorFn = d3.scaleSequential(d3.interpolateBuGn);
 const formatDate = d3.utcFormat("%x");
+const formatDay = d =>
+    ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"][d];
 
 let teams = [];
 let teamAbbrv = {};
@@ -41,11 +52,16 @@ d3.csv("/resources/teams.csv").then(data => {
         teamAbbrv[d["team_abbrev"]] = `${d["team_name"]} ${d["team_nickname"]}`;
     });
     currentTeam = validUrlTeam ? teams.filter(t => t.abbrv === urlTeam)[0] : teams[0];
-    loadSchedule();
+    drawButtons();
+    loadSchedule(`/resources/past_schedules/${currentYear}.csv`)
+        .then(drawCalendar)
+        .then(drawFilter);
 });
 
-function loadSchedule() {
-    d3.csv("schedule.csv").then(data => {
+function loadSchedule(path) {
+    firstDay = d3.timeDay(new Date(firstDays[currentYear.valueOf()]));
+    return d3.csv(path).then(data => {
+        days = 0;
         data.forEach(d => {
             // Map to dates and team names
             d.day = +d.day;
@@ -60,9 +76,78 @@ function loadSchedule() {
         scheduleData = data;
         workingSetAll = new Set(data);
         finalSchedule = schedule;
-        drawFilter(drawCalendar());
+        // drawFilter(drawCalendar());
         // drawTeamSchedule(teams[0]);
     });
+}
+
+function drawButtons() {
+    // const yearDiv = d3.select(yearDiv).append("span")
+    // .attr("width", "100%")
+    // .attr("height", "100%")
+    // .attr("x", 0)
+    // .attr("y", -40)
+    const buttonSelect = d3.select(buttonDiv);
+
+    function addButton(id, data, defaultValue, textFn, updateVar, updateFn) {
+        const select = buttonSelect.append("li")
+            .attr("class", "nav-item");
+        const button = select.append("button")
+            .attr("class", "nav-link dropdown-toggle")
+            .attr("id", id)
+            .attr("type", "button")
+            .attr("data-toggle", "dropdown")
+            .text(defaultValue);
+        /*
+        // Necessary if a button is moved into the svg element
+        .on("click", () => {
+            const rects = Array(...document.getElementsByTagName('rect'));
+            rects.forEach(d => {
+                d.style.pointerEvents = "none";
+            });
+            window.onclick = () => {
+                rects.forEach(d => {
+                    d.style.pointerEvents = "all";
+                });
+                window.onclick = null;
+            }
+        });
+        */
+
+        select.append("div")
+            .attr("class", "dropdown-menu")
+            .attr("aria-labelledby", id)
+            .selectAll("option")
+            .data(data)
+            .join("a")
+            .attr("class", "dropdown-item")
+            .on("click", (d, i, nodes) => {
+                for (idx in nodes) {
+                    nodes[idx].classList.remove("disabled");
+                    nodes[idx].style.backgroundColor = null;
+                }
+                button.text(textFn(d));
+                nodes[i].style.backgroundColor = "#d3d3d3"; // Gray
+                nodes[i].classList.add("disabled");
+                updateFn(updateVar, d);
+            })
+            .text(textFn);
+    }
+
+    const defaultYear = urlYear ? urlYear : "Select year";
+    addButton("selectYear", d3.range(2013, 2019), defaultYear, d => d, currentYear, (old, next) => {
+        old.valueOf = () => parseInt(next);
+        loadSchedule(`/resources/past_schedules/${next}.csv`)
+            .then(redraw);
+        return old
+    });
+    addButton("selectTeam", teams, currentTeam.name, t => t.name, currentTeam, (old, next) => {
+        Object.assign(old, next);
+        loadSchedule(`/resources/past_schedules/${next}.csv`)
+            .then(redraw);
+        return old;
+    });
+
 }
 
 // Could save memory by separating date and value + speed up w/o filter() but it's not significant
@@ -78,6 +163,7 @@ function daySchedule(data, teams) {
 
 function drawCalendar() {
     clear(svgDiv)
+
     const values = finalSchedule.map(d => d.value);
     let maxValue = Math.max(...values);
 
@@ -86,51 +172,7 @@ function drawCalendar() {
     const season = svg.append("g");
     season.attr("transform", `translate(50, ${cellSize * 1.5})`)
 
-    var yearDiv = season.append("foreignObject")
-        .attr("width", "100%")
-        .attr("height", "100%")
-        .attr("x", 0)
-        .attr("y", -40)
-
-    const yearButton = yearDiv.append("xhtml:button")
-        .attr("class", "btn btn-primary dropdown-toggle")
-        .attr("id", "selectYear")
-        .attr("type", "button")
-        .attr("data-toggle", "dropdown")
-        .text("Select year")
-        // .append("xhtml:span")
-        .on("click", () => {
-            const rects = Array(...document.getElementsByTagName('rect'));
-            rects.forEach(d => {
-                d.style.pointerEvents = "none";
-            });
-            window.onclick = () => {
-                rects.forEach(d => {
-                    d.style.pointerEvents = "all";
-                });
-                window.onclick = null;
-            }
-        });
-
-    yearDiv.append("xhtml:div")
-        .attr("class", "dropdown-menu")
-        .attr("aria-labelledby", "selectYear")
-        .selectAll("option")
-        .data([2015, 2016, 2017, 2018, 2019])
-        .join("a")
-        .attr("class", "dropdown-item")
-        .on("click", (d, i, nodes) => {
-            yearButton.text(d);
-            nodes[i].classList.add("disabled");
-        })
-        .text(d => d);
-
-
-    const formatDay = d =>
-        ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"][d];
-
     colorFn.domain([0, maxValue]);
-
     season
         .append("g")
         .attr("text-anchor", "end")
@@ -146,43 +188,66 @@ function drawCalendar() {
     season
         .append("g")
         .selectAll("rect")
-        .data(finalSchedule, d => d.date)
-        .join("rect")
-        .attr("width", cellSize - 1.5)
-        .attr("height", cellSize - 1.5)
-        .attr("x", d => d3.utcSunday.count(firstDay, d.date) * cellSize + 10)
-        .attr("y", d => d.date.getUTCDay() * cellSize + 0.5)
-        .attr("fill", d => colorFn(d.value))
-        .attr("data-toggle", "modal")
-        .attr("data-target", "#scheduleModal")
-        .on("click", data => {
-            while (modalBody.firstChild) {
-                modalBody.removeChild(modalBody.lastChild);
-            }
-
-            modalTitle.innerText = formatDate(data.date);
-            const day = d3.timeDay.count(firstDay, data.date);
-            const games = scheduleData.filter(d => d.day === day);
-            const formatted = games.map(d => `${d.team1} vs. ${d.team2}`)
-            for (let i = 0; i < formatted.length; i++) {
-                let li = document.createElement("li");
-                li.innerText = formatted[i];
-                li.classList.add("list-group-item");
-                li.onclick = e => {
-                    for (let j = 0; j < modalBody.children.length; j++) {
-                        let classes = modalBody.children[j].classList;
-                        if (classes.contains("active")) {
-                            classes.remove("active");
-                            break;
-                        }
+        .data(finalSchedule, d => d.index)
+        .join(enter => enter.append("rect")
+                .attr("width", (d, i, nodes) => {
+                    return cellSize - 1.5
+                })
+                .attr("height", cellSize - 1.5)
+                .attr("x", d => d3.utcSunday.count(firstDay, d.date) * cellSize + 10)
+                .attr("y", d => d.date.getUTCDay() * cellSize + 0.5)
+                .attr("data-toggle", "modal")
+                .attr("data-target", "#scheduleModal")
+                .on("click", data => {
+                    while (modalBody.firstChild) {
+                        modalBody.removeChild(modalBody.lastChild);
                     }
-                    e.target.classList.add("active");
+
+                    modalTitle.innerText = formatDate(data.date);
+                    const day = d3.timeDay.count(firstDay, data.date);
+                    const games = scheduleData.filter(d => d.day === day);
+                    const formatted = games.map(d => `${d.team1} vs. ${d.team2}`)
+                    for (let i = 0; i < formatted.length; i++) {
+                        let li = document.createElement("li");
+                        li.innerText = formatted[i];
+                        li.classList.add("list-group-item");
+                        li.onclick = e => {
+                            for (let j = 0; j < modalBody.children.length; j++) {
+                                let classes = modalBody.children[j].classList;
+                                if (classes.contains("active")) {
+                                    classes.remove("active");
+                                    break;
+                                }
+                            }
+                            e.target.classList.add("active");
+                        }
+                        modalBody.appendChild(li);
+                    }
+                })
+                .call(enter => enter.transition()
+                    .duration(500)
+                    .attr("fill", d => {
+                        return colorFn(d.value)
+                    })),
+            // .call(enter => enter.append("title")
+            //     .text(d => `${formatDate(d.date)}: ${d.value}`)
+            // ),
+            update => update.call((update, d) => {
+                    update
+                        .transition()
+                        .duration(500)
+                        .attr("fill", d => {
+                            return colorFn(d.value);
+                        })
                 }
-                modalBody.appendChild(li);
-            }
-        })
-        .append("title")
-        .text(d => `${formatDate(d.date)}: ${d.value}`);
+            ),
+            exit => exit.call(exit => exit.transition()
+                .duration(500)
+                .style('opacity', 0)
+                .on('end', function() {
+                    d3.select(this).remove();
+                }))
+        );
 
     // Stretch node for overflow
     stretch(svg);
@@ -303,7 +368,6 @@ function drawFilter(schedule) {
 function drawTeamSchedule(team) {
     clear(svgDiv);
     const teamSchedule = scheduleData.filter(d => d.team1 === team.abbrv || d.team2 === team.abbrv);
-    console.log(teamSchedule);
     const rows = 4;
     const baseCellSize = 40;
     const cellSize = baseCellSize * 7 / rows;
@@ -366,6 +430,16 @@ function swapCalendar(e) {
         }
         const season = drawCalendar()
         drawFilter(season);
+    }
+}
+
+function redraw() {
+    if (isActive(svgToggle1)) {
+        const season = drawCalendar()
+        drawFilter(season);
+    } else {
+        const schedule = drawTeamSchedule(currentTeam);
+        drawFilter(schedule);
     }
 }
 
