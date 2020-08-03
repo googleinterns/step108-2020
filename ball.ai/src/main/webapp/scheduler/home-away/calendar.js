@@ -231,7 +231,7 @@ function drawFilter(schedule) {
         nodes[i].style.opacity = data.selected ? 1 : 0.2;
         console.log(svgToggle1.classList);
 
-        if (svgToggle1.classList.contains("active")) {
+        if (isActive(svgToggle1)) {
             // Season schedule
             const change = data.selected ? g => {
                 if (workingSet.has(g)) {
@@ -333,18 +333,17 @@ function drawTeamSchedule(team) {
     return schedule;
 }
 
-function swapCalendar() {
-    if (svgToggle1.classList.contains("active")) {
-        console.log("1")
-        // svgToggle1.classList.remove("active");
-        // svgToggle2.classList.add("active");
+function swapCalendar(e) {
+    if (isActive(svgToggle1)) {
+        if (e.target.id === "svgToggle1") {
+            return false;
+        }
         const schedule = drawTeamSchedule(teams[0]);
         drawFilter(schedule);
-
     } else {
-        console.log("2")
-        // svgToggle2.classList.remove("active");
-        // svgToggle1.classList.add("active");
+        if (e.target.id === "svgToggle2") {
+            return false;
+        }
         const season = drawCalendar()
         drawFilter(season);
     }
@@ -363,4 +362,8 @@ function clear(node) {
 
 function neqTeam(game, team) {
     return game.team1 === team.abbrv ? game.team2 : game.team1
+}
+
+function isActive(ele) {
+    return ele.classList.contains("active")
 }
