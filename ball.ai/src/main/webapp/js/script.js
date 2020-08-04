@@ -48,26 +48,29 @@ async function selectPlayer() {
   document.getElementById('listPlayers').innerHTML = '';
   var player = document.getElementById('listPlayers');
   var liElement = document.createElement('li');
-  liElement.innerText = input;
+  liElement.innerText =  input;
   var seasonsList = document.createElement('select');
   const addPlayerButton = document.createElement('input');
   addPlayerButton.type = 'button';
+  addPlayerButton.className = 'btn btn-primary';
   addPlayerButton.value = 'Add Player';
   const deletePlayerButton = document.createElement('input');
   deletePlayerButton.type = 'button';
+  deletePlayerButton.className = 'btn btn-primary';
   deletePlayerButton.value = 'Remove Player';
   const position = document.createElement('select');
-  position.id = 'positions';
 
   //button adds the selected player to the chart
   addPlayerButton.addEventListener('click',() => {
-    player ={
-      id: input+seasonsList.value,
+    if (selectedPlayers.length < 5) {
+      var player = createplayer(input, seasonsList.value, position.id)
+      createPlayernode(input, playerInfo.get(input).player_id, player.id, position.value);
+      selectedPlayers.push(player);
+      console.log(player.id);
+      drawChart();
+    } else {
+        alert('You can only select 5 players');
     }
-    createPlayernode(input,playerInfo.get(input).player_id,player.id,position.value);
-    selectedPlayers.push(player);
-    console.log(player.id);
-    drawChart();
   });
 
   //removes liElement for the player selected
@@ -83,6 +86,7 @@ async function selectPlayer() {
     seasonsList.appendChild(option);
   }
 
+  //creates the position options list
   for (i = 0; i < playerInfo.get(input).positionsPlayed.length; i++) {
     var option1 = document.createElement("option");
     var option2 = document.createElement("option");
@@ -92,14 +96,17 @@ async function selectPlayer() {
       option2.innerText = 'S' + pos;
       position.appendChild(option1);
       position.appendChild(option2);
+      position.id = 'G';
     } else if (pos == 'F') {
       option1.innerText = 'S' + pos;
       option2.innerText = 'P' + pos;
       position.appendChild(option1);
       position.appendChild(option2);
+      position.id = 'F';
     } else {
       option1.innerText = pos;
       position.appendChild(option1);
+      position.id = 'C';
     }
   }
 
@@ -117,17 +124,17 @@ async function selectPlayer() {
  * @param {id of the current player} playerid 
  * @param {position selected for the player} pos 
  */
-function createPlayernode(name,imageId,playerid,position) {
+function createPlayernode(name, imageId, playerid, position) {
   var container  = document.getElementById('' + position + '-container');
   var player = document.createElement('li');
-  player.innerText = name;
-  var url = "/images/downsize_player/" + imageId + ".jpg"
+  player.innerHTML = '<center>' + name + '</center>';
+  var url = "/images/cropped/" + imageId + ".jpg"
   var img = document.createElement('img');
   img.height = "60";
   player.appendChild(img);
-  var deleteButton = document.createElement('input');
-  deleteButton.type = 'button';
-  deleteButton.value = 'remove from team';
+  var deleteButton = document.createElement('button');
+  deleteButton.className = 'btn';
+  deleteButton.innerHTML = '<i class="fa fa-trash"></i>';
 
   //removes player from chart
   deleteButton.addEventListener('click',() => {
@@ -201,4 +208,61 @@ function onInput() {
       selectPlayer();
     }
   }
+}
+
+/**
+ * sends created team to calendar page
+ */
+function createTeam() {
+  if (selectedPlayers.length == 5) {
+    var team = document.getElementById('team').value;
+    var year = document.getElementById('year').value;
+    var queryString = "?player1=" + selectedPlayers[0].id + selectedPlayers[0].position.toLowerCase()
+                    + "&player2=" + selectedPlayers[1].id + selectedPlayers[1].position.toLowerCase()
+                    + "&player3=" + selectedPlayers[2].id + selectedPlayers[2].position.toLowerCase() 
+                    + "&player4=" + selectedPlayers[3].id + selectedPlayers[3].position.toLowerCase()
+                    + "&player5=" + selectedPlayers[4].id + selectedPlayers[4].position.toLowerCase() 
+                    + "&team=" + team + "&year=" + year;
+    window.location.href = "schedule.html" + queryString;
+  } else {
+    alert('You need 5 players to create a team');
+  }
+}
+
+/**
+ * adds 5 players to the team
+ */
+function quickTeam() {
+  var derrick = createplayer('Derrick Rose', 2008, 'G');
+  var klay = createplayer('Klay Thompson', 2011, 'G');
+  var kevin = createplayer('Kevin Durant', 2018, 'F');
+  var tim = createplayer('Tim Duncan', 2015, 'F');
+  var joel = createplayer('Joel Embiid', 2016, 'C');
+  selectedPlayers.push(derrick);
+  selectedPlayers.push(klay);
+  selectedPlayers.push(kevin);
+  selectedPlayers.push(tim);
+  selectedPlayers.push(joel);
+  createPlayernode(derrick.name, 201565, derrick.id, 'PG');
+  createPlayernode(klay.name, 202691, klay.id, 'SG');
+  createPlayernode(kevin.name, 201142, kevin.id, 'SF');
+  createPlayernode(tim.name, 1495, tim.id, 'PF');
+  createPlayernode(joel.name, 203954, joel.id, 'C');
+  drawChart();
+}
+
+/**
+ * creates player object from params
+ * @param {name of player} player 
+ * @param {season of player} year 
+ * @param {position of player} pos 
+ * @return returns player object
+ */
+function createplayer(player, year, pos)  {
+  player = {
+    name: player,
+    position: pos,
+    id: player + year,
+  }
+  return player;
 }
