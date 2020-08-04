@@ -51,7 +51,7 @@
         <version>2.2.0</version>
         <configuration>
           <!-- TODO: set project ID. -->
-          <deploy.projectId>bj-de-jw-gcp</deploy.projectId>
+          <deploy.projectId>bj-de-jw-app</deploy.projectId>
           <deploy.version>1</deploy.version>
         </configuration>
       </plugin>
