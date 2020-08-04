@@ -30,8 +30,8 @@ WEEK_LEN = 7
 GAMES_PER_WEEK = 4
 
 # TEAMS = 8
-# DAYS = (teams-2)*7
-# WEEKS = teams-2
+# DAYS = (TEAMS-2)*7
+# WEEKS = 3
 
 
 def base_model():
@@ -75,8 +75,8 @@ def base_model():
         solver.Add(solver.Sum(home_vars) == 41)
         solver.Add(solver.Sum(away_vars) == 41)
         # Use this instead if you change the number of teams
-        # solver.Add(solver.Sum(home_vars) == teams-2)
-        # solver.Add(solver.Sum(away_vars) == teams-2)
+        # solver.Add(solver.Sum(home_vars) == TEAMS-2)
+        # solver.Add(solver.Sum(away_vars) == TEAMS-2)
 
     for team1 in range(TEAMS):
         team1_div = team_to_division(team1)
@@ -128,26 +128,30 @@ def add_cost(solver, vars):
             away_vars = [ys[week][team2][team1] for team2 in range(TEAMS) if team1 != team2]
             solver.Add(zs[week][team1] >= sum(home_vars) + sum(away_vars) - 3)
 
-    ws = [solver.BoolVar(f'w_{team}') for team in range(TEAMS)]
+    # ws = [solver.BoolVar(f'w_{team}') for team in range(TEAMS)]
+    # for team in range(TEAMS):
+    #     week_zs = []
+    #     for week in range(WEEKS):
+    #         week_zs.append(zs[week][team])
+    #     solver.Add(ws[team] == sum(week_zs))
+
+    v = solver.Var(0, WEEKS, False, "v")
     for team in range(TEAMS):
         week_zs = []
         for week in range(WEEKS):
             week_zs.append(zs[week][team])
-        solver.Add(ws[team] >= sum(week_zs))
-
-    v = solver.Var(0, solver.infinity(), False, "v")
-    for team in range(TEAMS):
-        solver.Add(v >= ws[team])
+        solver.Add(v >= sum(week_zs))
     solver.Minimize(v)
 
     # solver.Minimize(sum(np.array(zs).flatten()))
 
-    return vars + [zs, ws, v]
-
+    # return vars + [zs, ws, v]
+    return vars + [zs]
 
 
 def solve(solver, vars):
     ys = vars[1]
+    zs = vars[2]
     print('Number of variables =', solver.NumVariables())
     print('Number of constraints =', solver.NumConstraints())
     status = solver.Solve()
@@ -161,15 +165,15 @@ def solve(solver, vars):
 
         # Debugging
         # team1 = 0
-        # print(ws[team1].solution_value())
-        # for week in range(weeks):
-        #     home_vars = [ys[week][team1][team2] for team2 in range(teams) if team1 != team2]
-        #     away_vars = [ys[week][team2][team1] for team2 in range(teams) if team1 != team2]
+        # # print(ws[team1].solution_value())
+        # for week in range(WEEKS):
+        #     home_vars = [ys[week][team1][team2] for team2 in range(TEAMS) if team1 != team2]
+        #     away_vars = [ys[week][team2][team1] for team2 in range(TEAMS) if team1 != team2]
         #     print(team1, week, sum(map(lambda x: x.solution_value(), home_vars)) + sum(map(lambda x: x.solution_value(), away_vars)))
         #     print(zs[week][team1].solution_value())
-        # for week in range(weeks):
-        #     for team1 in range(teams):
-        #         for team2 in range(teams):
+        # for week in range(WEEKS):
+        #     for team1 in range(TEAMS):
+        #         for team2 in range(TEAMS):
         #             if team1 != team2:
         #                 print(ys[week][team1][team2], ys[week][team1][team2].solution_value())
 
@@ -198,5 +202,5 @@ def solve(solver, vars):
 
 if __name__ == '__main__':
     solver, vars = base_model()
-    # vars = add_cost(solver, vars)
+    vars = add_cost(solver, vars)
     solve(solver, vars)
