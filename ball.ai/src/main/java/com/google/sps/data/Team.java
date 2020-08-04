@@ -23,6 +23,6 @@ public class Team {
 
   public static List<Team> fromCSV() {
     CSVToObj csv = new CSVToObj();
-    return csv.fromFile("resources/teams.csv", Team.class);
+    return csv.fromFile("resources/all_teams_per_year.csv", Team.class);
   }
 }

@@ -8,6 +8,8 @@ public class Schedule {
   public List<Game> games = null;
   public List<Team> teams = null;
 
+  public Schedule() {}
+
   public Schedule(int year) {
     this.year = year;
   }
