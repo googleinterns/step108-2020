@@ -132,10 +132,9 @@ function createPlayernode(name, imageId, playerid, position) {
   var img = document.createElement('img');
   img.height = "60";
   player.appendChild(img);
-  var deleteButton = document.createElement('input');
-  deleteButton.type = 'button';
-  deleteButton.className = 'btn btn-primary';
-  deleteButton.value = 'remove from team';
+  var deleteButton = document.createElement('button');
+  deleteButton.className = 'btn';
+  deleteButton.innerHTML = '<i class="fa fa-trash"></i>';
 
   //removes player from chart
   deleteButton.addEventListener('click',() => {
@@ -218,13 +217,13 @@ function createTeam() {
   if (selectedPlayers.length == 5) {
     var team = document.getElementById('team').value;
     var year = document.getElementById('year').value;
-    var queryString = "?player1=" + selectedPlayers[0].id + selectedPlayers[0].position
-                    + "&player2=" + selectedPlayers[1].id + selectedPlayers[1].position 
-                    + "&player3=" + selectedPlayers[2].id + selectedPlayers[2].position 
-                    + "&player4=" + selectedPlayers[3].id + selectedPlayers[3].position
-                    + "&player5=" + selectedPlayers[4].id + selectedPlayers[4].position 
+    var queryString = "?player1=" + selectedPlayers[0].id + selectedPlayers[0].position.toLowerCase()
+                    + "&player2=" + selectedPlayers[1].id + selectedPlayers[1].position.toLowerCase()
+                    + "&player3=" + selectedPlayers[2].id + selectedPlayers[2].position.toLowerCase() 
+                    + "&player4=" + selectedPlayers[3].id + selectedPlayers[3].position.toLowerCase()
+                    + "&player5=" + selectedPlayers[4].id + selectedPlayers[4].position.toLowerCase() 
                     + "&team=" + team + "&year=" + year;
-    window.location.href = "scheduler/home-away/calendar.html" + queryString;
+    window.location.href = "schedule.html" + queryString;
   } else {
     alert('You need 5 players to create a team');
   }
