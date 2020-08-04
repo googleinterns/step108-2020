@@ -41,25 +41,6 @@ function loadYears(prefix) {
     });
 }
 
-// AUTOCOMPLETE FOR NAMES
-$( async function() {
-    await loadData();
-    var availableNames = jsondict["raw_player_names"]["names"];
-    $( ".playername-input" ).autocomplete({
-      source: availableNames
-    });
-  } );
-
-// DROPDOWN MENU CODCHANGEE
-$( document ).ready(function() {
-    $('.dropdown').each(function (key, dropdown) {
-        var $dropdown = $(dropdown);
-        $dropdown.on('click', ".dropdown-item", function () {
-            $dropdown.find('button').text($(this).text()).append(' <span class="caret"></span>').prop("value", $(this).text());
-        });
-    });
-});
-
 //simulation outer loop
 async function simulate() {
 
@@ -75,15 +56,6 @@ async function simulate() {
 }
 
 async function displayResults(pred) {
-    /*var pbd = document.getElementById("progress-bar-div");
-    if(pbd.style.display == '' || pbd.style.display == 'none'){
-        pbd.style.display = 'block';
-    }
-
-    var rdtd = document.getElementById("result-display-text-div");
-    if(rdtd.style.display == '' || rdtd.style.display == 'none'){
-        rdtd.style.display = 'block';
-    }*/
 
     var pred_pct = pred*100; //float
     var roundpred = pred_pct.toFixed(1); //string
@@ -132,7 +104,6 @@ async function generateDataset() {
             var season = Math.max.apply(Math, jsondict["player_info_dict"][playerid]["seasons_avail"]);
             $("#".concat(prefix,"year")).text(season).append(' <span class="caret"></span>').prop("value", season);
         }
-        var playerid = jsondict["ids_dict"][playername];
         var statvalue = jsondict["player_info_dict"][playerid][season][stat];
         raw_arr.push(statvalue)
     });
@@ -160,4 +131,96 @@ async function predict(raw_arr) {
     const values = evaluated_tensor.dataSync();
     const arr = Array.from(values);
     return arr[0]
+}
+
+//simulation outer loop
+async function simulate_for_jeremy(hm_arr, aw_arr) { //[array of length 5 ... each item is "firstname lastname year position"]
+
+    var d = {}
+    
+    hm_arr.forEach(function(entry) {
+        const x = entry.split(" ");
+        var firstname = x[0];
+        var pos = x[1].slice(-1);
+        var season = x[1].slice(-5,-1);
+        var lastname = x[1].slice(0,-5);
+        if (pos == "c") {
+            d["hm_c_"]["name"] = firstname.concat(" ", lastname);
+            d["hm_c_"]["season"] = season;
+        }
+        else if ("hm_".concat(pos,"_1_") in d) {
+            d["hm_".concat(pos,"_2_") ]["name"] = firstname.concat(" ", lastname);
+            d["hm_".concat(pos,"_2_") ]["season"] = season;
+        }
+        else {
+            d["hm_".concat(pos,"_1_") ]["name"] = firstname.concat(" ", lastname);
+            d["hm_".concat(pos,"_1_") ]["season"] = season;
+        }
+    });
+
+    aw_arr.forEach(function(entry) {
+        const x = entry.split(" ");
+        var firstname = x[0];
+        var pos = x[1].slice(-1);
+        var season = x[1].slice(-5,-1);
+        var lastname = x[1].slice(0,-5);
+        if (pos == "c") {
+            d["aw_c_"]["name"] = firstname.concat(" ", lastname);
+            d["aw_c_"]["season"] = season;
+        }
+        else if ("aw_".concat(pos,"_1_") in d) {
+            d["aw_".concat(pos,"_2_") ]["name"] = firstname.concat(" ", lastname);
+            d["aw_".concat(pos,"_2_") ]["season"] = season;
+        }
+        else {
+            d["aw_".concat(pos,"_1_") ]["name"] = firstname.concat(" ", lastname);
+            d["aw_".concat(pos,"_1_") ]["season"] = season;
+        }
+    });
+
+
+
+    //checkValidInputs();
+    if (!("train_std" in jsondict)) {
+        await loadSingleJson("train_std");
+        await loadSingleJson("train_mean");
+        await loadSingleJson("ids_dict");
+        await loadSingleJson("starters_dict");
+        await loadSingleJson("raw_player_names");
+        await loadSingleJson("player_info_dict");
+        model = await tf.loadLayersModel('resources/nn_model/tfjs-model/model.json');
+    }
+
+    var raw_arr = await generateDataset_jeremy(d);
+    var pred = await predict(raw_arr);
+    return pred;
+}
+
+async function generateDataset_jeremy(d) {
+    var keys = [];
+    for(var k in jsondict["train_mean"]) {keys.push(k);}
+    var raw_arr = [];
+    leftovers = keys.slice(-5)
+    keys = keys.slice(0, -5)
+
+    keys.forEach(function(entry) {
+        const first_pref = entry.slice(0, 5);
+        if (first_pref.slice(3, 4) == "c") {var prefix = first_pref}
+        else {var prefix = entry.slice(0, 7)}
+        var stat = entry.slice(prefix.length);
+
+        var playername = d[prefix]["name"];
+        var playerid = jsondict["ids_dict"][playername];
+
+        var season = d[prefix]["season"];
+        var playerid = jsondict["ids_dict"][playername];
+        var statvalue = jsondict["player_info_dict"][playerid][season][stat];
+        raw_arr.push(statvalue)
+    });
+
+    leftovers.forEach(function(entry) {
+        raw_arr.push(jsondict["train_mean"][entry])
+    });
+
+    return raw_arr;
 }

@@ -62,14 +62,19 @@ class AssignmentConstraints(unittest.TestCase):
 
     def testWeekLimit(self):
         """Team plays at most 4 matches / week"""
+        week_cnts = {team: [] for team in range(teams)}
         for team in team_d:
             week_cnt = 0
             for day in range(days):
                 for match in team_d[team]:
                     if match.day == day:
                         week_cnt += 1
-                assert week_cnt <= 4, "Team plays at most 4 matches / week"
-                week_cnt = 0
+                if day % 7 == 6:
+                    assert week_cnt <= 4, "Team plays at most 4 matches / week"
+                    week_cnts[team].append(week_cnt)
+                    week_cnt = 0
+        for team in week_cnts:
+            print(sum((1 for v in week_cnts[team] if v == 4)), end=' ')
 
     def testDayLimit(self):
         """Team plays at most one match / day"""
@@ -166,12 +171,14 @@ class AssignmentConstraints(unittest.TestCase):
                 week_matches[match.day].append(match)
             for week in week_matches:
                 if len(week) > 0:
-                    is_home = week[0].day
+                    is_home = week[0].home_team == team
                     for match in week:
                         if is_home:
                             check_team = match.home_team
                         else:
                             check_team = match.away_team
+                        if check_team != team:
+                            print('')
                         assert check_team == team, "Team only plays either home or away games in each week"
 
 

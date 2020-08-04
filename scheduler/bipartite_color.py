@@ -1,16 +1,16 @@
 import csv
 import numpy as np
 import random
-import copy
-
+import sys
 WEEK_LEN = 7
-IN_FILE = 'v2_opt.csv'
-OUT_FILE = 'v2_sched_opt.csv'
+IN_FILE = sys.argv[1]
+OUT_FILE = sys.argv[2]
 BASE_EVEN_WEEK = [0, 2, 4, 6]
 BASE_ODD_WEEK = [1, 3, 5, 6]
 EVEN_WEEK = BASE_EVEN_WEEK + BASE_ODD_WEEK
 ODD_WEEK = BASE_ODD_WEEK + BASE_EVEN_WEEK
-
+# TODO list of all games, 0 if second half / 1 if first half
+# TODO 41 games in each half, 20/21 games
 
 class Edge:
 	def __init__(self, match):
@@ -35,7 +35,7 @@ def main():
 		chosen = [0 for i in range(WEEK_LEN)]
 		vertices = {v: [False] * WEEK_LEN for v in range(teams)}
 		edges = [Edge(match) for match in matches if match[0] == week]
-		# random.shuffle(edges)
+		random.shuffle(edges)
 		for edge in edges:
 			v1 = vertices[edge.match[1]]
 			v2 = vertices[edge.match[2]]
@@ -43,6 +43,7 @@ def main():
 			edge.color = color
 			v1[color] = v2[color] = True
 		weekly[week] = edges
+		print(chosen)
 
 	weekly = {week: sorted(weekly[week], key=lambda x: x.color) for week in weekly}
 	with open(OUT_FILE, 'w') as f:
@@ -69,15 +70,15 @@ def choose_color(v1, v2, chosen):
 	if not candidates:
 		raise AssertionError("Too many colors")
 	else:
-		# return random.choice(candidates)
-		min = float("inf")
-		idx = 0
-		for val in candidates:
-			if val < min:
-				idx = val
-				min = val
-		chosen[idx] += 1
-		return idx
+		return random.choice(candidates)
+		# min = float("inf")
+		# idx = 0
+		# for val in candidates:
+		# 	if val < min:
+		# 		idx = val
+		# 		min = val
+		# chosen[idx] += 1
+		# return idx
 
 
 if __name__ == '__main__':
