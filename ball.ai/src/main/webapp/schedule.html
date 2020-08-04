@@ -1,95 +1,91 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <title>Home/Away Viz</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <script src="https://d3js.org/d3.v5.min.js"></script>
-  <script src="https://d3js.org/d3-time.v1.min.js"></script>
-  <style>
-    /* Make the container fill the page */
-    html, body {
-      height: 100%;
-    }
-    #svgContainer, #filterCollapse {
-      width: 100%;
-      overflow: scroll;
-    }
-
-    /* "Hand cursor" when hovering over clickables */
-    rect {
-      cursor: pointer;
-    }
-    image {
-      cursor: pointer;
-      transition: opacity 0.3s ease-in-out;
-    }
-
-  </style>
-</head>
-<body>
-<!-- Navigation -->
-<nav class="navbar navbar-light bg-light static-top">
-  <div class="container">
-    <a class="navbar-brand" href="#">ball.ai</a>
-    <div>
-      <a class="btn btn-primary" href="teamcreation.html">Build</a>
-      <a class="btn btn-primary disabled" href="schedule.html">Schedule</a>
-      <a class="btn btn-primary" href="predict.html">Simulate</a>
-    </div>
-  </div>
-</nav>
-<div id="schedules">
-  <ul class="nav nav-tabs" id="selects">
-    <li class="nav-item"><a class="nav-link active" data-toggle="tab" id="svgToggle1" href="#svgContainer" onclick="swapCalendar(event)">Season Schedule</a></li>
-    <li class="nav-item"><a class="nav-link" data-toggle="tab" id="svgToggle2" href="#svgContainer" onclick="swapCalendar(event)">Team Schedule</a></li>
-  </ul>
-
-  <div class="tab-content">
-    <div id="svgContainer"></div>
-  </div>
-  <!-- Legend -->
-  <div class="row">
-    <div class="col align-self-start">
-      <a class="btn btn-primary" data-toggle="collapse" href="#filterCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
-        Show/Hide
-      </a>
-      <button class="btn btn-primary orange" onclick="Array.from(document.getElementsByTagName('image')).forEach(d => d.dispatchEvent(new MouseEvent('click')))">
-        Toggle all
-      </button>
-    </div>
-    <div class="col align-self-center">
-      <button class="btn btn-primary">Simulate all</button>
-    </div>
-  </div>
-  <div class="collapse show" id="filterCollapse"></div>
-</div>
-
-<!-- Modal -->
-<div class="modal fade" id="scheduleModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalTitle"></h5>
-        <button type="button" class="close" data-dismiss="modal">
-          <span>&times;</span>
-        </button>
+  <head>
+    <meta charset="utf-8">
+    <title>Home/Away Viz</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://d3js.org/d3-time.v1.min.js"></script>
+    <style>
+      /* Make the container fill the page */
+      html, body {
+        height: 100%;
+      }
+      #svgContainer, #filterCollapse {
+        width: 100%;
+        overflow: scroll;
+      }
+      /* "Hand cursor" when hovering over clickables */
+      rect {
+        cursor: pointer;
+      }
+      image {
+        cursor: pointer;
+        transition: opacity 0.3s ease-in-out;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-light bg-light static-top">
+      <div class="container">
+        <a class="navbar-brand" href="#">ball.ai</a>
+        <div>
+          <a class="btn btn-primary" href="teamcreation.html">Build</a>
+          <a class="btn btn-primary disabled" href="schedule.html">Schedule</a>
+          <a class="btn btn-primary" href="predict.html">Simulate</a>
+        </div>
       </div>
-      <div class="modal-body" id="modalBody">
-        <ul class="list-group" id="modalList"></ul>
+    </nav>
+    <!-- Schedules -->
+    <div id="schedules">
+      <ul class="nav nav-tabs" id="selects">
+        <li class="nav-item"><a class="nav-link active" data-toggle="tab" id="svgToggle1" href="#svgContainer" onclick="swapCalendar(event)">Season Schedule</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" id="svgToggle2" href="#svgContainer" onclick="swapCalendar(event)">Team Schedule</a></li>
+      </ul>
+      <div class="tab-content">
+        <div id="svgContainer"></div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Simulate</button>
+      <!-- Legend / Buttons -->
+      <div class="row">
+        <div class="col align-self-start">
+          <a class="btn btn-primary" data-toggle="collapse" href="#filterCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+            Show/Hide
+          </a>
+          <button class="btn btn-primary orange" onclick="Array.from(document.getElementsByTagName('image')).forEach(d => d.dispatchEvent(new MouseEvent('click')))">
+            Toggle all
+          </button>
+        </div>
+        <div class="col align-self-center">
+          <button class="btn btn-primary">Simulate all</button>
+        </div>
+      </div>
+      <div class="collapse show" id="filterCollapse"></div>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="scheduleModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalTitle"></h5>
+            <button type="button" class="close" data-dismiss="modal">
+              <span>&times;</span>
+            </button>
+          </div>
+          <div class="modal-body" id="modalBody">
+            <ul class="list-group" id="modalList"></ul>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Simulate</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
-
-<script src="calendar.js"></script>
-<!-- Bootstrap -->
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-</body>
+    <script src="calendar.js"></script>
+    <!-- Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  </body>
 </html>
