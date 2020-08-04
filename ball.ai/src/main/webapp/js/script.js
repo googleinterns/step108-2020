@@ -59,15 +59,18 @@ async function selectPlayer() {
   deletePlayerButton.className = 'btn btn-primary';
   deletePlayerButton.value = 'Remove Player';
   const position = document.createElement('select');
-  position.id = 'positions';
 
   //button adds the selected player to the chart
   addPlayerButton.addEventListener('click',() => {
-    var player = createplayer(input, position.value, input+seasonsList.value)
-    createPlayernode(input,playerInfo.get(input).player_id,player.id,position.value);
-    selectedPlayers.push(player);
-    console.log(player.id);
-    drawChart();
+    if (selectedPlayers.length < 5) {
+      var player = createplayer(input, seasonsList.value, position.id)
+      createPlayernode(input, playerInfo.get(input).player_id, player.id, position.value);
+      selectedPlayers.push(player);
+      console.log(player.id);
+      drawChart();
+    } else {
+        alert('You can only select 5 players');
+    }
   });
 
   //removes liElement for the player selected
@@ -83,27 +86,27 @@ async function selectPlayer() {
     seasonsList.appendChild(option);
   }
 
+  //creates the position options list
   for (i = 0; i < playerInfo.get(input).positionsPlayed.length; i++) {
     var option1 = document.createElement("option");
     var option2 = document.createElement("option");
     var pos = playerInfo.get(input).positionsPlayed[i];
     if (pos == 'G') {
-      option1.value = 'G';
-      option2.value = 'G';
       option1.innerText = 'P' + pos;
       option2.innerText = 'S' + pos;
       position.appendChild(option1);
       position.appendChild(option2);
+      position.id = 'G';
     } else if (pos == 'F') {
-      option1.value = 'F';
-      option2.value = 'F';
       option1.innerText = 'S' + pos;
       option2.innerText = 'P' + pos;
       position.appendChild(option1);
       position.appendChild(option2);
+      position.id = 'F';
     } else {
       option1.innerText = pos;
       position.appendChild(option1);
+      position.id = 'C';
     }
   }
 
@@ -121,7 +124,7 @@ async function selectPlayer() {
  * @param {id of the current player} playerid 
  * @param {position selected for the player} pos 
  */
-function createPlayernode(name,imageId,playerid,position) {
+function createPlayernode(name, imageId, playerid, position) {
   var container  = document.getElementById('' + position + '-container');
   var player = document.createElement('li');
   player.innerHTML = '<center>' + name + '</center>';
@@ -215,7 +218,7 @@ function createTeam() {
   if (selectedPlayers.length == 5) {
     var team = document.getElementById('team').value;
     var year = document.getElementById('year').value;
-    var queryString = "&player1=" + selectedPlayers[0].id + selectedPlayers[0].position
+    var queryString = "?player1=" + selectedPlayers[0].id + selectedPlayers[0].position
                     + "&player2=" + selectedPlayers[1].id + selectedPlayers[1].position 
                     + "&player3=" + selectedPlayers[2].id + selectedPlayers[2].position 
                     + "&player4=" + selectedPlayers[3].id + selectedPlayers[3].position
@@ -231,18 +234,18 @@ function createTeam() {
  * adds 5 players to the team
  */
 function quickTeam() {
-  var stephen = createplayer('Stephen Curry', 2018, 'G');
-  var ray = createplayer('Ray Allen', 2013, 'G');
+  var derrick = createplayer('Derrick Rose', 2008, 'G');
+  var klay = createplayer('Klay Thompson', 2011, 'G');
   var kevin = createplayer('Kevin Durant', 2018, 'F');
   var tim = createplayer('Tim Duncan', 2015, 'F');
   var joel = createplayer('Joel Embiid', 2016, 'C');
-  selectedPlayers.push(stephen);
-  selectedPlayers.push(ray);
+  selectedPlayers.push(derrick);
+  selectedPlayers.push(klay);
   selectedPlayers.push(kevin);
   selectedPlayers.push(tim);
   selectedPlayers.push(joel);
-  createPlayernode(stephen.name, 201939, stephen.id, 'PG');
-  createPlayernode(ray.name, 951, ray.id, 'SG');
+  createPlayernode(derrick.name, 201565, derrick.id, 'PG');
+  createPlayernode(klay.name, 202691, klay.id, 'SG');
   createPlayernode(kevin.name, 201142, kevin.id, 'SF');
   createPlayernode(tim.name, 1495, tim.id, 'PF');
   createPlayernode(joel.name, 203954, joel.id, 'C');
