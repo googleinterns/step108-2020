@@ -49,12 +49,19 @@
     <div id="svgContainer"></div>
   </div>
   <!-- Legend -->
-  <p>
-    <a class="btn btn-primary" data-toggle="collapse" href="#filterCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
-      Show/Hide
-    </a>
-    <button class="btn btn-primary" onclick="Array.from(document.getElementsByTagName('image')).forEach(d => d.dispatchEvent(new MouseEvent('click')))">Toggle all</button>
-  </p>
+  <div class="row">
+    <div class="col align-self-start">
+      <a class="btn btn-primary" data-toggle="collapse" href="#filterCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+        Show/Hide
+      </a>
+      <button class="btn btn-primary orange" onclick="Array.from(document.getElementsByTagName('image')).forEach(d => d.dispatchEvent(new MouseEvent('click')))">
+        Toggle all
+      </button>
+    </div>
+    <div class="col align-self-center">
+      <button class="btn btn-primary">Simulate all</button>
+    </div>
+  </div>
   <div class="collapse show" id="filterCollapse"></div>
 </div>
 

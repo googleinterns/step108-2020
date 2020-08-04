@@ -3,6 +3,10 @@
 const url = new URL(window.location.href);
 const urlTeam = url.searchParams.get("team");
 const urlYear = url.searchParams.get("year");
+let players = new Array(5);
+for (let i in d3.range(5)) {
+    players[i] = url.searchParams.get(`player${i}`);
+}
 
 const gamesPerTeam = 82;
 const emptySet = new Set();
