@@ -278,14 +278,14 @@ function drawFilter(schedule) {
 
   // Handle filtering for each schedule variant
   function legendClick(data, i, nodes) {
-    if (!isActive(svgToggle1) && data.abbrv == currentTeam.abbrv) {
+    if (!isActive(svgToggle1) && data.abbrv === currentTeam.abbrv) {
       // Don't disable all the teams
       return;
     }
 
     const {selected} = data;
     data.selected = !selected;
-    nodes[i].style.opacity = data.selected ? 1 : 0.2;
+    nodes[i].style.opacity = data.selected ? "1" : "0.2";
     data.selected ? filterTeams.delete(data.abbrv) :
                     filterTeams.add(data.abbrv);
 
@@ -355,13 +355,9 @@ function drawTeamSchedule() {
   const teamSchedule = scheduleData.filter(
       d => d.team1 === currentTeam.abbrv || d.team2 === currentTeam.abbrv);
   const winColor = game => isWinner(game, currentTeam) ? 'green' : 'red';
-  const colors = teamSchedule.map(winColor);
-  const nWins = colors.filter(g => g === 'green').length;
-  const nLosses = colors.filter(g => g === 'red').length;
   const rows = 4;
   const baseCellSize = 40;
   const cellSize = baseCellSize * 7 / rows;
-  const yearHeight = baseCellSize * 7;
   const schedule = svg.append('g');
   schedule.attr('transform', `translate(50, ${baseCellSize * 1.4})`)
 
