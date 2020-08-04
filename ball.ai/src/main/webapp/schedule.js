@@ -1,11 +1,9 @@
-// ?players={}
-
 const url = new URL(window.location.href);
 const urlTeam = url.searchParams.get('team');
 const urlYear = url.searchParams.get('year');
 let players = new Array(5);
-for (let i in d3.range(5)) {
-  players[i] = url.searchParams.get(`player${i}`);
+for (let i = 0; i < 5; i++) {
+  players[i] = url.searchParams.get(`player${i+1}`);
 }
 
 const gamesPerTeam = 82;
@@ -16,6 +14,7 @@ let firstDays;
 let firstDay;
 d3.json('/resources/past_schedules/first_days.json').then(data => {
   firstDays = data;
+  firstDays[NaN] = new Date("2021-10-20");
   firstDay = d3.timeDay(new Date(firstDays[currentYear]));
 })
 
@@ -63,7 +62,7 @@ d3.csv('/resources/teams.csv').then(data => {
     teamAbbrv[d['team_abbrev']] = `${d['team_name']} ${d['team_nickname']}`;
   });
   currentTeam = validUrlTeam ? teams.filter(t => t.abbrv === urlTeam)[0] :
-                               new Object(teams[0]);
+      new Object(teams[0]);
   drawButtons();
   loadWins()
       .then(d => loadSchedule(`/resources/past_schedules/${currentYear}.csv`))
@@ -86,10 +85,14 @@ function loadSchedule(path) {
 
     // Count number of games per day
     scheduleData = data;
-    scheduleData.forEach((d, i) => d.win = wins[i]);
+    bindWins();
     workingSetAll = new Set(data);
     finalSchedule = daySchedule(data, emptySet);
   });
+}
+
+function bindWins() {
+  scheduleData.forEach((d, i) => d.win = wins[i]);
 }
 
 function drawButtons() {
@@ -98,11 +101,11 @@ function drawButtons() {
   function addButton(id, data, defaultValue, textFn, updateFn) {
     const select = buttonSelect.append('li').attr('class', 'nav-item');
     const button = select.append('button')
-                       .attr('class', 'nav-link dropdown-toggle')
-                       .attr('id', id)
-                       .attr('type', 'button')
-                       .attr('data-toggle', 'dropdown')
-                       .text(defaultValue);
+        .attr('class', 'nav-link dropdown-toggle')
+        .attr('id', id)
+        .attr('type', 'button')
+        .attr('data-toggle', 'dropdown')
+        .text(defaultValue);
     /*
     // Necessary if a button is moved into the svg element
     .on("click", () => {
@@ -141,11 +144,17 @@ function drawButtons() {
   }
 
   const defaultYear = urlYear ? urlYear : 'Select year';
-  addButton('selectYear', d3.range(2013, 2019), defaultYear, d => d, d => {
+  addButton('selectYear', ["New"].concat(d3.range(2013, 2019)), defaultYear, d => d, d => {
     currentYear = parseInt(d);
-    loadWins()
-        .then(() => loadSchedule(`/resources/past_schedules/${d}.csv`))
-        .then(redraw);
+    if (isNaN(currentYear)) {
+      d3.json("randomSchedule")
+          .then(loadSchedule)
+          .then(redraw);
+    } else {
+      loadWins()
+          .then(() => loadSchedule(`/resources/past_schedules/${d}.csv`))
+          .then(redraw);
+    }
   });
   addButton('selectTeam', teams, currentTeam.name, t => t.name, d => {
     currentTeam = d;
@@ -163,9 +172,9 @@ function daySchedule(data, teams) {
     schedule.push({
       'date': date,
       'value': data.filter(
-                       d => d.day === i && !teams.has(d.team1) &&
-                           !teams.has(d.team2))
-                   .length
+          d => d.day === i && !teams.has(d.team1) &&
+              !teams.has(d.team2))
+          .length
     });
   }
   return schedule;
@@ -173,6 +182,7 @@ function daySchedule(data, teams) {
 
 function drawCalendar() {
   clear(svgDiv)
+
   const values = finalSchedule.map(d => d.value);
   let maxValue = Math.max(...values);
 
@@ -259,7 +269,7 @@ function drawFilter(schedule) {
   const categories = teams.map(t => {
     return {
       abbrv: t['abbrv'], src: `/resources/logos/${t['name']}.png`,
-          selected: true
+      selected: true
     }
   });
 
@@ -288,7 +298,7 @@ function drawFilter(schedule) {
     data.selected = !selected;
     nodes[i].style.opacity = data.selected ? "1" : "0.2";
     data.selected ? filterTeams.delete(data.abbrv) :
-                    filterTeams.add(data.abbrv);
+        filterTeams.add(data.abbrv);
 
     if (isActive(svgToggle1)) {
       // Season schedule
@@ -355,7 +365,7 @@ function drawTeamSchedule() {
   clear(svgDiv);
   const teamSchedule = scheduleData.filter(
       d => d.team1 === currentTeam.abbrv || d.team2 === currentTeam.abbrv);
-  const winColor = game => isWinner(game, currentTeam) ? 'green' : 'red';
+  const winColor = isNaN(currentYear) ? "none" : game => isWinner(game, currentTeam) ? 'green' : 'red';
   const rows = 4;
   const baseCellSize = 40;
   const cellSize = baseCellSize * 7 / rows;
