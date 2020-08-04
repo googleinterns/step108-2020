@@ -227,7 +227,8 @@ function drawCalendar() {
                   }
                 }
                 e.target.classList.add('active');
-              } modalBody.appendChild(li);
+              }
+              modalBody.appendChild(li);
             }
           })
       .call(
