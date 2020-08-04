@@ -48,22 +48,22 @@ async function selectPlayer() {
   document.getElementById('listPlayers').innerHTML = '';
   var player = document.getElementById('listPlayers');
   var liElement = document.createElement('li');
-  liElement.innerText = input;
+  liElement.innerText =  input;
   var seasonsList = document.createElement('select');
   const addPlayerButton = document.createElement('input');
   addPlayerButton.type = 'button';
+  addPlayerButton.className = 'btn btn-primary';
   addPlayerButton.value = 'Add Player';
   const deletePlayerButton = document.createElement('input');
   deletePlayerButton.type = 'button';
+  deletePlayerButton.className = 'btn btn-primary';
   deletePlayerButton.value = 'Remove Player';
   const position = document.createElement('select');
   position.id = 'positions';
 
   //button adds the selected player to the chart
   addPlayerButton.addEventListener('click',() => {
-    player ={
-      id: input+seasonsList.value,
-    }
+    var player = createplayer(input, position.value, input+seasonsList.value)
     createPlayernode(input,playerInfo.get(input).player_id,player.id,position.value);
     selectedPlayers.push(player);
     console.log(player.id);
@@ -88,11 +88,15 @@ async function selectPlayer() {
     var option2 = document.createElement("option");
     var pos = playerInfo.get(input).positionsPlayed[i];
     if (pos == 'G') {
+      option1.value = 'G';
+      option2.value = 'G';
       option1.innerText = 'P' + pos;
       option2.innerText = 'S' + pos;
       position.appendChild(option1);
       position.appendChild(option2);
     } else if (pos == 'F') {
+      option1.value = 'F';
+      option2.value = 'F';
       option1.innerText = 'S' + pos;
       option2.innerText = 'P' + pos;
       position.appendChild(option1);
@@ -120,13 +124,14 @@ async function selectPlayer() {
 function createPlayernode(name,imageId,playerid,position) {
   var container  = document.getElementById('' + position + '-container');
   var player = document.createElement('li');
-  player.innerText = name;
-  var url = "/images/downsize_player/" + imageId + ".jpg"
+  player.innerHTML = '<center>' + name + '</center>';
+  var url = "/images/cropped/" + imageId + ".jpg"
   var img = document.createElement('img');
   img.height = "60";
   player.appendChild(img);
   var deleteButton = document.createElement('input');
   deleteButton.type = 'button';
+  deleteButton.className = 'btn btn-primary';
   deleteButton.value = 'remove from team';
 
   //removes player from chart
@@ -201,4 +206,61 @@ function onInput() {
       selectPlayer();
     }
   }
+}
+
+/**
+ * sends created team to calendar page
+ */
+function createTeam() {
+  if (selectedPlayers.length == 5) {
+    var team = document.getElementById('team').value;
+    var year = document.getElementById('year').value;
+    var queryString = "&player1=" + selectedPlayers[0].id + selectedPlayers[0].position
+                    + "&player2=" + selectedPlayers[1].id + selectedPlayers[1].position 
+                    + "&player3=" + selectedPlayers[2].id + selectedPlayers[2].position 
+                    + "&player4=" + selectedPlayers[3].id + selectedPlayers[3].position
+                    + "&player5=" + selectedPlayers[4].id + selectedPlayers[4].position 
+                    + "&team=" + team + "&year=" + year;
+    window.location.href = "scheduler/home-away/calendar.html" + queryString;
+  } else {
+    alert('You need 5 players to create a team');
+  }
+}
+
+/**
+ * adds 5 players to the team
+ */
+function quickTeam() {
+  var stephen = createplayer('Stephen Curry', 2018, 'G');
+  var ray = createplayer('Ray Allen', 2013, 'G');
+  var kevin = createplayer('Kevin Durant', 2018, 'F');
+  var tim = createplayer('Tim Duncan', 2015, 'F');
+  var joel = createplayer('Joel Embiid', 2016, 'C');
+  selectedPlayers.push(stephen);
+  selectedPlayers.push(ray);
+  selectedPlayers.push(kevin);
+  selectedPlayers.push(tim);
+  selectedPlayers.push(joel);
+  createPlayernode(stephen.name, 201939, stephen.id, 'PG');
+  createPlayernode(ray.name, 951, ray.id, 'SG');
+  createPlayernode(kevin.name, 201142, kevin.id, 'SF');
+  createPlayernode(tim.name, 1495, tim.id, 'PF');
+  createPlayernode(joel.name, 203954, joel.id, 'C');
+  drawChart();
+}
+
+/**
+ * creates player object from params
+ * @param {name of player} player 
+ * @param {season of player} year 
+ * @param {position of player} pos 
+ * @return returns player object
+ */
+function createplayer(player, year, pos)  {
+  player = {
+    name: player,
+    position: pos,
+    id: player + year,
+  }
+  return player;
 }
