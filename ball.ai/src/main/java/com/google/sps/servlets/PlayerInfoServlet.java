@@ -21,8 +21,9 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/playerInfo")
 public class PlayerInfoServlet extends HttpServlet {
 
-
-    //reads in csv file of players and converts it to json
+    /**
+     * reads in csv file of players and converts it to json
+     */
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         BufferedReader br = null;
