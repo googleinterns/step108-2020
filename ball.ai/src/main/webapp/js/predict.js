@@ -4,14 +4,14 @@ var model;
 //ONLOAD FUNC
 async function loadData() {
     $(".dropdown-toggle").width(43)
-    //FIRST SUBFUNCTION WE WANT - LOAD NECESSARY JSONS  
+    //FIRST SUBFUNCTION WE WANT - LOAD NECESSARY JSONS
     await loadSingleJson("ids_dict");
     await loadSingleJson("starters_dict");
     await loadSingleJson("raw_player_names");
     await loadSingleJson("player_info_dict");
     model = await tf.loadLayersModel('resources/nn_model/tfjs-model/model.json');
 
-    await allowSim(); 
+    await allowSim();
 }
 
 async function allowSim() {
@@ -22,13 +22,13 @@ async function allowSim() {
 
 async function loadSingleJson(jsonName) {
     await fetch('/resources/nn_model/aux-files/'.concat(jsonName, ".json")).then((response) => response.json()).then((data) => {
-                        jsondict[jsonName] = data;
+        jsondict[jsonName] = data;
     })
 }
 
 function loadYears(prefix) {
     var playername = document.getElementById(prefix.concat("name")).value;
-    if (playername == "") {    
+    if (playername == "") {
         var playername = document.getElementById(prefix.concat("name")).placeholder;
     }
     const playerid = jsondict["ids_dict"][playername];
@@ -94,13 +94,13 @@ async function generateDataset() {
         var stat = entry.slice(prefix.length);
 
         var playername = document.getElementById(prefix.concat("name")).value;
-        if (playername == "") {    
+        if (playername == "") {
             var playername = document.getElementById(prefix.concat("name")).placeholder;
         }
         var playerid = jsondict["ids_dict"][playername];
 
         var season = document.getElementById(prefix.concat("year")).value;
-        if (season == "") {   
+        if (season == "") {
             var season = Math.max.apply(Math, jsondict["player_info_dict"][playerid]["seasons_avail"]);
             $("#".concat(prefix,"year")).text(season).append(' <span class="caret"></span>').prop("value", season);
         }
@@ -126,7 +126,6 @@ async function predict(raw_arr) {
     }
 
     const norm_tensor = tf.tensor(normalized_arr, [1,465]);
-    
     var evaluated_tensor = model.predict(norm_tensor);
     const values = evaluated_tensor.dataSync();
     const arr = Array.from(values);
@@ -135,50 +134,29 @@ async function predict(raw_arr) {
 
 //simulation outer loop
 async function simulate_for_jeremy(hm_arr, aw_arr) { //[array of length 5 ... each item is "firstname lastname year position"]
-
     var d = {}
-    
-    hm_arr.forEach(function(entry) {
-        const x = entry.split(" ");
-        var firstname = x[0];
-        var pos = x[1].slice(-1);
-        var season = x[1].slice(-5,-1);
-        var lastname = x[1].slice(0,-5);
-        if (pos == "c") {
-            d["hm_c_"]["name"] = firstname.concat(" ", lastname);
-            d["hm_c_"]["season"] = season;
-        }
-        else if ("hm_".concat(pos,"_1_") in d) {
-            d["hm_".concat(pos,"_2_") ]["name"] = firstname.concat(" ", lastname);
-            d["hm_".concat(pos,"_2_") ]["season"] = season;
-        }
-        else {
-            d["hm_".concat(pos,"_1_") ]["name"] = firstname.concat(" ", lastname);
-            d["hm_".concat(pos,"_1_") ]["season"] = season;
-        }
-    });
+    function parse_players(arr, prefix) {
+        arr.forEach(entry => {
+            const pos = entry.slice(-1);
+            const season = entry.slice(-5, -1);
+            const name = entry.slice(0, -5);
+            let index;
+            if (pos === "c") {
+                index = prefix.concat("c_");
+            } else if (prefix.concat(pos, "_1_") in d) {
+                index = prefix.concat(pos, "_2_");
+            } else {
+                index = prefix.concat(pos, "_1_");
+            }
+            d[index] = {
+                "name": name,
+                "season": season
+            };
+        });
+    }
 
-    aw_arr.forEach(function(entry) {
-        const x = entry.split(" ");
-        var firstname = x[0];
-        var pos = x[1].slice(-1);
-        var season = x[1].slice(-5,-1);
-        var lastname = x[1].slice(0,-5);
-        if (pos == "c") {
-            d["aw_c_"]["name"] = firstname.concat(" ", lastname);
-            d["aw_c_"]["season"] = season;
-        }
-        else if ("aw_".concat(pos,"_1_") in d) {
-            d["aw_".concat(pos,"_2_") ]["name"] = firstname.concat(" ", lastname);
-            d["aw_".concat(pos,"_2_") ]["season"] = season;
-        }
-        else {
-            d["aw_".concat(pos,"_1_") ]["name"] = firstname.concat(" ", lastname);
-            d["aw_".concat(pos,"_1_") ]["season"] = season;
-        }
-    });
-
-
+    parse_players(hm_arr, "hm_");
+    parse_players(aw_arr, "aw_");
 
     //checkValidInputs();
     if (!("train_std" in jsondict)) {
@@ -210,8 +188,6 @@ async function generateDataset_jeremy(d) {
         var stat = entry.slice(prefix.length);
 
         var playername = d[prefix]["name"];
-        var playerid = jsondict["ids_dict"][playername];
-
         var season = d[prefix]["season"];
         var playerid = jsondict["ids_dict"][playername];
         var statvalue = jsondict["player_info_dict"][playerid][season][stat];
