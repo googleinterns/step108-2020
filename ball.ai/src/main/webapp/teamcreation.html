@@ -1,173 +1,176 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <title>Team Creator</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link href="vendor/simple-line-icons/css/simple-line-icons.css" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    
-     <!-- Custom fonts for this template -->
-    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
-    <link href="vendor/simple-line-icons/css/simple-line-icons.css" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
 
-    <!-- favicon -->
-    <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
+<head>
+    <meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Create a team and schedule them in an NBA season.">
+	<meta name="author" content="Brandon Jones">
+	<!-- Bootstrap core CSS -->
+	<link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<!-- Custom fonts for this template -->
+	<link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
+	<link href="vendor/simple-line-icons/css/simple-line-icons.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+	<!-- Custom styles for this template -->
+	<link href="css/landing-page.min.css" rel="stylesheet">
+	<!-- favicon -->
+	<link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
 
-    <script src="https://www.gstatic.com/charts/loader.js"></script>
-    <script src="js/script.js"></script>
-  </head>
-  <body>
-    <nav class="navbar navbar-light bg-light static-top">
-      <div class="container">
-        <a class="navbar-brand" href="#">ball.ai</a>
-        <div>
-          <a class="btn btn-primary" href="teamcreation.html">Build</a>
-          <a class="btn btn-primary" href="schedule.html">Schedule</a>
-          <a class="btn btn-primary" href="predict.html">Simulate</a>
-        </div>
-      </div>
-    </nav>
-    <section class="jumbotron text-center">
-      <div class="container">
-        <h1 class="jumbotron-heading">Team Builder</h1>
-        <p class="lead text-muted">Create a team by searching for 5 players and add them to team.</p>
-      </div>
-    </section>
-    <div class="container">
-      <div class="row">
-        <div class="col-md-8 ">
-          <form>
-            <div class="row">
-              <div class="col-md-4 left">
-                <center><h2>PG</h2></center>
-              </div>
-              <div class="col-md-8 right ">
-                <div id="PG-container"></div>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-md-4 left">
-                <center><h2>SG</h2></center>
-              </div>
-              <div class="col-md-8 right ">
-                <div id="SG-container"></div>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-md-4 left">
-                <center><h2>SF</h2></center>
-              </div>
-              <div class="col-md-8 right ">
-                <div id="SF-container"></div>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-md-4 left">
-                <center><h2>PF</h2></center>
-              </div>
-              <div class="col-md-8 right ">
-                <div id="PF-container"></div>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-md-4 left">
-                <center><h2>C</h2></center>
-              </div>
-              <div class="col-md-8 right ">
-                <div id="C-container"></div>
-              </div>
-            </div>
-          </form>
-          <div id="chart-container"></div>
-        </div>
-        <div class="col-md-4 ">
-          <input type="text" id="searchQuery" onkeyup="search()" oninput="onInput()"placeholder="Search for players.." list="list">
-          <datalist id="list">
-          </datalist>
-          <ul id="listPlayers"></ul>
-            <div >
-              Choose a team to replace
-              <select id="team">
-                <option>Celtics</option>
-                <option>Nets</option>
-                <option>Knicks</option>
-                <option>76ers</option>
-                <option>Raptors</option>
-                <option>Cavaliers</option>
-                <option>Bulls</option>
-                <option>Bucks</option>
-                <option>Pacers</option>
-                <option>Pistons</option>
-                <option>Hawks</option>
-                <option>Heat</option>
-                <option>Magic</option>
-                <option>Wizards</option>
-                <option>Hornets</option>
-                <option>Nuggets</option>
-                <option>Timberwolves</option>
-                <option>Trail Blazers</option>
-                <option>Thunder</option>
-                <option>Jazz</option>
-                <option>Warriors</option>
-                <option>Clippers</option>
-                <option>Lakers</option>
-                <option>Suns</option>
-                <option>Kings</option>
-                <option>Pelicans</option>
-                <option>Mavericks</option>
-                <option>Rockets</option>
-                <option>Spurs</option>
-                <option>Grizzlies</option>
-              </select> 
-              <select id="year">
-                <option>2013</option>
-                <option>2014</option>
-                <option>2015</option>
-                <option>2016</option>
-                <option>2017</option>
-                <option>2018</option>
-              </select><br>
-              <input type="button" class="btn btn-primary" onclick="createTeam()" value="Simulate season">
-              <input type="button" class="btn btn-primary" onclick="quickTeam()" value="quick team">
-            </div>
-        </div>
-      </div>
-    </div>
-    <!-- Footer -->
-    <footer class="footer bg-light">
-      <div class="container">
-        <div class="row">
-          <div class="col-lg-6 h-100 text-center text-lg-left my-auto">
-            <ul class="list-inline mb-2">
-              <li class="list-inline-item">
-                <a href="#">About</a>
-              </li>
-              <li class="list-inline-item">&sdot;</li>
-              <li class="list-inline-item">
-                <a href="mailto:diegoesc@google.com,brandonkj@google.com,jeremyweiss@google.com">Contact</a>
-              </li>
-            <p class="text-muted small mb-4 mb-lg-0">&copy; ball.ai 2020. All Rights Reserved.</p>
-          </div>
-          <div class="col-lg-6 h-100 text-center text-lg-right my-auto">
-            <ul class="list-inline mb-0">
-              <li class="list-inline-item mr-3">
-                <a href="https://github.com/googleinterns/step108-2020">
-                  <i class="fab fa-github fa-2x fa-fw"></i>
-                </a>
-              </li>
-              <li class="list-inline-item">
-                <a href="https://www.instagram.com/google/?hl=en">
-                  <i class="fab fa-instagram fa-2x fa-fw"></i>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </footer>
-  </body>
+	<title>Team Creator</title>
+	<link rel="stylesheet" href="css/style.css">
+	<link href="vendor/simple-line-icons/css/simple-line-icons.css" rel="stylesheet" type="text/css">
+
+	<script src="https://www.gstatic.com/charts/loader.js"></script>
+	<script src="js/script.js"></script>
+</head>
+
+<body>
+	<!-- Navigation -->
+	<nav class="navbar navbar-light bg-light static-top">
+		<div class="container"> <a class="navbar-brand" href="index.html">ball.ai</a>
+			<div> <a class="btn btn-primary" href="teamcreation.html">Build</a> <a class="btn btn-primary" href="schedule.html">Schedule</a> <a class="btn btn-primary" href="predict.html">Simulate</a> </div>
+		</div>
+	</nav>
+	<section class="jumbotron text-center">
+		<div class="container">
+			<h1 class="jumbotron-heading">Team Builder</h1>
+			<p class="lead text-muted">Create a team by searching for 5 players and add them to team.</p>
+		</div>
+	</section>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-8 ">
+				<form>
+					<div class="row">
+						<div class="col-md-4 left">
+							<center>
+								<h2>PG</h2></center>
+						</div>
+						<div class="col-md-8 right ">
+							<div id="PG-container"></div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-4 left">
+							<center>
+								<h2>SG</h2></center>
+						</div>
+						<div class="col-md-8 right ">
+							<div id="SG-container"></div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-4 left">
+							<center>
+								<h2>SF</h2></center>
+						</div>
+						<div class="col-md-8 right ">
+							<div id="SF-container"></div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-4 left">
+							<center>
+								<h2>PF</h2></center>
+						</div>
+						<div class="col-md-8 right ">
+							<div id="PF-container"></div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-4 left">
+							<center>
+								<h2>C</h2></center>
+						</div>
+						<div class="col-md-8 right ">
+							<div id="C-container"></div>
+						</div>
+					</div>
+				</form>
+				<div id="chart-container"></div>
+			</div>
+			<div class="col-md-4 ">
+				<input type="text" id="searchQuery" onkeyup="search()" oninput="onInput()" placeholder="Search for players.." list="list">
+				<datalist id="list"> </datalist>
+				<ul id="listPlayers"></ul>
+				<div> Choose a team to replace
+					<select id="team">
+						<option>Celtics</option>
+						<option>Nets</option>
+						<option>Knicks</option>
+						<option>76ers</option>
+						<option>Raptors</option>
+						<option>Cavaliers</option>
+						<option>Bulls</option>
+						<option>Bucks</option>
+						<option>Pacers</option>
+						<option>Pistons</option>
+						<option>Hawks</option>
+						<option>Heat</option>
+						<option>Magic</option>
+						<option>Wizards</option>
+						<option>Hornets</option>
+						<option>Nuggets</option>
+						<option>Timberwolves</option>
+						<option>Trail Blazers</option>
+						<option>Thunder</option>
+						<option>Jazz</option>
+						<option>Warriors</option>
+						<option>Clippers</option>
+						<option>Lakers</option>
+						<option>Suns</option>
+						<option>Kings</option>
+						<option>Pelicans</option>
+						<option>Mavericks</option>
+						<option>Rockets</option>
+						<option>Spurs</option>
+						<option>Grizzlies</option>
+					</select>
+					<select id="year">
+						<option>2013</option>
+						<option>2014</option>
+						<option>2015</option>
+						<option>2016</option>
+						<option>2017</option>
+						<option>2018</option>
+					</select>
+					<br>
+					<input type="button" class="btn btn-primary" onclick="createTeam()" value="Simulate season">
+					<input type="button" class="btn btn-primary" onclick="quickTeam()" value="quick team"> </div>
+			</div>
+		</div>
+	</div>
+	<!-- Footer -->
+	<footer class="footer bg-light fixed-bottom">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-6 h-100 text-center text-lg-left my-auto">
+					<ul class="list-inline mb-2">
+						<li class="list-inline-item"> <a href="#">About</a> </li>
+						<li class="list-inline-item">&sdot;</li>
+						<li class="list-inline-item"> <a href="mailto:diegoesc@google.com,brandonkj@google.com,jeremyweiss@google.com">Contact</a> </li>
+					</ul>
+					<p class="text-muted small mb-4 mb-lg-0">&copy; ball.ai 2020. All Rights Reserved.</p>
+				</div>
+				<div class="col-lg-6 h-100 text-center text-lg-right my-auto">
+					<ul class="list-inline mb-0">
+						<li class="list-inline-item mr-3">
+							<a href="https://github.com/googleinterns/step108-2020"> <i class="fab fa-github fa-2x fa-fw"></i> </a>
+						</li>
+						<li class="list-inline-item">
+							<a href="https://www.instagram.com/google/?hl=en"> <i class="fab fa-instagram fa-2x fa-fw"></i> </a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</footer>
+	<!-- Bootstrap core JavaScript -->
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+
 </html>

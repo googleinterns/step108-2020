@@ -1,93 +1,137 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>Home/Away Viz</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <script src="https://d3js.org/d3.v5.min.js"></script>
-    <script src="https://d3js.org/d3-time.v1.min.js"></script><!-- Tensorflow -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
-    <style>
-      /* Make the container fill the page */
-      html, body {
-        height: 100%;
-      }
-      #svgContainer, #filterCollapse {
-        width: 100%;
-        overflow: scroll;
-      }
-      /* "Hand cursor" when hovering over clickables */
-      rect {
-        cursor: pointer;
-      }
-      image {
-        cursor: pointer;
-        transition: opacity 0.3s ease-in-out;
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-light bg-light static-top">
-      <div class="container">
-        <a class="navbar-brand" href="#">ball.ai</a>
-        <div>
-          <a class="btn btn-primary" href="teamcreation.html">Build</a>
-          <a class="btn btn-primary disabled" href="schedule.html">Schedule</a>
-          <a class="btn btn-primary" href="predict.html">Simulate</a>
-        </div>
-      </div>
-    </nav>
-    <!-- Schedules -->
-    <div id="schedules">
-      <ul class="nav nav-tabs" id="selects">
-        <li class="nav-item"><a class="nav-link active" data-toggle="tab" id="svgToggle1" href="#svgContainer" onclick="swapCalendar(event)">Season Schedule</a></li>
-        <li class="nav-item"><a class="nav-link" data-toggle="tab" id="svgToggle2" href="#svgContainer" onclick="swapCalendar(event)">Team Schedule</a></li>
-      </ul>
-      <div class="tab-content">
-        <div id="svgContainer"></div>
-      </div>
-      <!-- Legend / Buttons -->
-      <div class="row">
-        <div class="col align-self-start">
-          <a class="btn btn-primary" data-toggle="collapse" href="#filterCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Visualize your custom team's performance in a real NBA season">
+	<meta name="author" content="Jeremy Weiss">
+	<!-- Bootstrap core CSS -->
+	<link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<!-- Custom fonts for this template -->
+	<link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
+	<link href="vendor/simple-line-icons/css/simple-line-icons.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+	<!-- Custom styles for this template -->
+	<link href="css/landing-page.min.css" rel="stylesheet">
+	<!-- favicon -->
+	<link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png"> 
+
+	<title>Home/Away Viz</title>
+	<script src="https://d3js.org/d3.v5.min.js"></script>
+	<script src="https://d3js.org/d3-time.v1.min.js"></script>
+	<!-- Tensorflow -->
+	<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+
+	<style>
+	/* Make the container fill the page */
+	
+	html,
+	body {
+		height: 100%;
+	}
+	
+	#svgContainer,
+	#filterCollapse {
+		width: 100%;
+		overflow: scroll;
+	}
+	/* "Hand cursor" when hovering over clickables */
+	
+	rect {
+		cursor: pointer;
+	}
+	
+	image {
+		cursor: pointer;
+		transition: opacity 0.3s ease-in-out;
+	}
+	</style>
+</head>
+
+<body>
+	<!-- Navigation -->
+	<nav class="navbar navbar-light bg-light static-top">
+		<div class="container"> <a class="navbar-brand" href="index.html">ball.ai</a>
+			<div> <a class="btn btn-primary" href="teamcreation.html">Build</a> <a class="btn btn-primary" href="schedule.html">Schedule</a> <a class="btn btn-primary" href="predict.html">Simulate</a> </div>
+		</div>
+	</nav>
+	<!-- Schedules -->
+	<div id="schedules">
+		<ul class="nav nav-tabs" id="selects">
+			<li class="nav-item"><a class="nav-link active" data-toggle="tab" id="svgToggle1" href="#svgContainer" onclick="swapCalendar(event)">Season Schedule</a></li>
+			<li class="nav-item"><a class="nav-link" data-toggle="tab" id="svgToggle2" href="#svgContainer" onclick="swapCalendar(event)">Team Schedule</a></li>
+		</ul>
+		<div class="tab-content">
+			<div id="svgContainer"></div>
+		</div>
+		<!-- Legend / Buttons -->
+		<div class="row">
+			<div class="col align-self-start"> <a class="btn btn-primary" data-toggle="collapse" href="#filterCollapse" role="button" aria-expanded="false" aria-controls="collapseExample">
             Show/Hide
           </a>
-          <button class="btn btn-primary orange" onclick="Array.from(document.getElementsByTagName('image')).forEach(d => d.dispatchEvent(new MouseEvent('click')))">
-            Toggle all
-          </button>
-        </div>
-        <div class="col align-self-center">
-          <button class="btn btn-primary" onclick="simulateAll()">Simulate all</button>
-        </div>
-      </div>
-      <div class="collapse show" id="filterCollapse"></div>
-    </div>
-    <!-- Modal -->
-    <div class="modal fade" id="scheduleModal" tabindex="-1" role="dialog">
-      <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="modalTitle"></h5>
-            <button type="button" class="close" data-dismiss="modal">
-              <span>&times;</span>
-            </button>
-          </div>
-          <div class="modal-body" id="modalBody">
-            <ul class="list-group" id="modalList"></ul>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary">Simulate</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Bootstrap -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <script src="js/predict.js"></script>
-    <script src="schedule.js"></script>
-  </body>
+				<button class="btn btn-primary orange" onclick="Array.from(document.getElementsByTagName('image')).forEach(d => d.dispatchEvent(new MouseEvent('click')))"> Toggle all </button>
+			</div>
+			<div class="col align-self-center">
+				<button class="btn btn-primary" onclick="simulateAll()">Simulate all</button>
+			</div>
+		</div>
+		<div class="collapse show" id="filterCollapse"></div>
+	</div>
+	<!-- Modal -->
+	<div class="modal fade" id="scheduleModal" tabindex="-1" role="dialog">
+		<div class="modal-dialog modal-dialog-centered" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="modalTitle"></h5>
+					<button type="button" class="close" data-dismiss="modal"> <span>&times;</span> </button>
+				</div>
+				<div class="modal-body" id="modalBody">
+					<ul class="list-group" id="modalList"></ul>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary">Simulate</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Bootstrap -->
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+	<script src="js/predict.js"></script>
+	<script src="schedule.js"></script>
+	<!-- Footer -->
+	<footer class="footer bg-light fixed-bottom">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-6 h-100 text-center text-lg-left my-auto">
+					<ul class="list-inline mb-2">
+						<li class="list-inline-item"> <a href="#">About</a> </li>
+						<li class="list-inline-item">&sdot;</li>
+						<li class="list-inline-item"> <a href="mailto:diegoesc@google.com,brandonkj@google.com,jeremyweiss@google.com">Contact</a> </li>
+					</ul>
+					<p class="text-muted small mb-4 mb-lg-0">&copy; ball.ai 2020. All Rights Reserved.</p>
+				</div>
+				<div class="col-lg-6 h-100 text-center text-lg-right my-auto">
+					<ul class="list-inline mb-0">
+						<li class="list-inline-item mr-3">
+							<a href="https://github.com/googleinterns/step108-2020"> <i class="fab fa-github fa-2x fa-fw"></i> </a>
+						</li>
+						<li class="list-inline-item">
+							<a href="https://www.instagram.com/google/?hl=en"> <i class="fab fa-instagram fa-2x fa-fw"></i> </a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</footer>
+	<!-- Bootstrap core JavaScript -->
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+
 </html>
