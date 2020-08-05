@@ -126,7 +126,6 @@ async function predict(raw_arr) {
     }
 
     const norm_tensor = tf.tensor(normalized_arr, [1,465]);
-
     var evaluated_tensor = model.predict(norm_tensor);
     const values = evaluated_tensor.dataSync();
     const arr = Array.from(values);
