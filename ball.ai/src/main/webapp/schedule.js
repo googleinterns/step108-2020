@@ -18,6 +18,9 @@ d3.json('/resources/past_schedules/first_days.json').then(data => {
   firstDay = d3.timeDay(new Date(firstDays[currentYear]));
 })
 
+let teamPlayers;
+d3.json('/resources/team_players.json').then(data => teamPlayers = data);
+
 let wins;
 function loadWins() {
   return d3.json(`/resources/past_schedules/wl/${currentYear}.json`)
@@ -52,16 +55,19 @@ let finalSchedule;
 d3.csv('/resources/teams.csv').then(data => {
   let validUrlTeam = false;
   data.forEach(d => {
-    if (urlTeam === d['team_abbrev']) {
+    if (urlTeam === d['team_nickname']) {
       validUrlTeam = true;
     }
-    teams.push({
+    let team = {
       'abbrv': d['team_abbrev'],
-      'name': `${d['team_name']} ${d['team_nickname']}`
-    });
-    teamAbbrv[d['team_abbrev']] = `${d['team_name']} ${d['team_nickname']}`;
+      'name': `${d['team_name']} ${d['team_nickname']}`,
+      'nickname': d['team_nickname'],
+      'id': parseInt(d['team_id'])
+    };
+    teams.push(team);
+    teamAbbrv[d['team_abbrev']] = team;
   });
-  currentTeam = validUrlTeam ? teams.filter(t => t.abbrv === urlTeam)[0] :
+  currentTeam = validUrlTeam ? teams.filter(t => t.nickname === urlTeam)[0] :
       new Object(teams[0]);
   drawButtons();
   loadWins()
@@ -373,12 +379,12 @@ function drawTeamSchedule() {
   schedule.attr('transform', `translate(50, ${baseCellSize * 1.4})`)
 
   schedule.append('text')
-      .attr('x', 50)
+      .attr('x', 75)
       .attr('y', -10)
       .attr('text-anchor', 'end')
       .attr('font-size', 16)
       .attr('font-weight', 550)
-      .text(currentTeam.abbrv);
+      .text(currentTeam.name);
 
   schedule.append('g')
       .selectAll('image')
@@ -386,7 +392,7 @@ function drawTeamSchedule() {
       .join('image')
       .attr(
           'xlink:href',
-          d => `/resources/logos/${teamAbbrv[neqTeam(d, currentTeam)]}.png`)
+          d => `/resources/logos/${teamAbbrv[neqTeam(d, currentTeam)].name}.png`)
       .attr('width', cellSize - 1.5)
       .attr('height', cellSize - 1.5)
       .attr(
@@ -470,4 +476,23 @@ function isWinner(game, team) {
 
 function isActive(ele) {
   return ele.classList.contains('active')
+}
+
+// Call's the ML model
+function simulateAll() {
+  if (isActive(svgToggle2)) {
+    svg.selectAll('rect')
+        .each((game, i, nodes) => {
+          let team1 = teamAbbrv[game.team1];
+          let team2 = teamAbbrv[game.team2];
+          let awaitProb = isHome(game, currentTeam) ?
+              simulate_for_jeremy(players, teamPlayers[team2.id]) :
+              simulate_for_jeremy(teamPlayers[team1.id], players);
+          awaitProb.then(prob => {
+            const homeWin = Math.random() > prob;
+            const thisWin = isHome(game, currentTeam) ? homeWin : !homeWin;
+            nodes[i].style.stroke = thisWin ? "green" : "red";
+          });
+        });
+  }
 }
