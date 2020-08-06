@@ -480,19 +480,22 @@ function isActive(ele) {
 
 // Call's the ML model
 function simulateAll() {
-  if (isActive(svgToggle2)) {
-    svg.selectAll('rect')
-        .each((game, i, nodes) => {
-          let team1 = teamAbbrv[game.team1];
-          let team2 = teamAbbrv[game.team2];
-          let awaitProb = isHome(game, currentTeam) ?
-              simulate_for_jeremy(players, teamPlayers[team2.id]) :
-              simulate_for_jeremy(teamPlayers[team1.id], players);
-          awaitProb.then(prob => {
-            const homeWin = Math.random() > prob;
-            const thisWin = isHome(game, currentTeam) ? homeWin : !homeWin;
-            nodes[i].style.stroke = thisWin ? "green" : "red";
-          });
-        });
+  if (!isActive(svgToggle2)) {
+    svgToggle2.click();
   }
+
+  svg.selectAll('rect')
+      .attr('stroke', "none")
+      .each((game, i, nodes) => {
+        let team1 = teamAbbrv[game.team1];
+        let team2 = teamAbbrv[game.team2];
+        let awaitProb = isHome(game, currentTeam) ?
+            simulate_for_jeremy(players, teamPlayers[team2.id]) :
+            simulate_for_jeremy(teamPlayers[team1.id], players);
+        awaitProb.then(prob => {
+          const homeWin = Math.random() > prob;
+          const thisWin = isHome(game, currentTeam) ? homeWin : !homeWin;
+          nodes[i].style.stroke = thisWin ? "green" : "red";
+        });
+      });
 }
