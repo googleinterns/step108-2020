@@ -102,8 +102,8 @@ One possible way to further reduce runtime would be to solve the schedule symmet
 $$\forall t, u \in \mathcal{T}:\; L_{tu} = U_{tu}$$
 Unfortunately, one of constraints requires each team to play 3 games against 4 of the in-conference, out-of-division teams. In that case
 $$L_{tu} = 1 \neq 2 = U_{tu}$$
-violating the symmetry condition. <br>
-
+violating the symmetry condition.<br/>
+<br/>
 Since MIPs are NP-Hard, cutting the search space in half should reduce the runtime considerably. Instead of simply copying the games from the first half to the second half, we could first solve a preprocessing problem where we could fix the teams which play 3 games agianst each other and which halves they play 2 games in. Passing this to the "Weekly" solver, we could solve the problem twice over half the search space and still find an optimal solution. The preprocessing was never finished, but the model would look something similar to this:
 
 <h5>Data and Variables</h5>
