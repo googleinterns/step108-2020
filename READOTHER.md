@@ -133,3 +133,6 @@ Since MIPs are NP-Hard, cutting the search space in half should reduce the runti
  &(2) \hspace{3ex} \forall t \in \mathcal{T}:&& \sum_{u \in \mathcal{C}_t} y_{ut} = 2 \\
  &(3) \hspace{3ex} \forall t \in \mathcal{T}:&& \sum_{u \in \mathcal{C}_t} z_{ut} = 2 \\
 \end{align*}
+
+<h3>Visualization</h3>
+All of the visualizations and animations were created with D3, based off of this [tutorial](https://blog.risingstack.com/tutorial-d3-js-calendar-heatmap/). You can see the source [here](ball.ai/src/main/webapp/schedule.js).
