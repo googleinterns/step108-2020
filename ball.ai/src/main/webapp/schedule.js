@@ -1,3 +1,4 @@
+// Get parameters from player/team selection page
 const url = new URL(window.location.href);
 const urlTeam = url.searchParams.get('team');
 const urlYear = url.searchParams.get('year');
@@ -9,11 +10,12 @@ for (let i = 0; i < 5; i++) {
 const gamesPerTeam = 82;
 const emptySet = new Set();
 let currentTeam;
-let currentYear = urlYear ? parseInt(urlYear) : parseInt(2013);
+let currentYear = urlYear ? parseInt(urlYear) : 2013;
 let firstDays;
 let firstDay;
 d3.json('/resources/past_schedules/first_days.json').then(data => {
   firstDays = data;
+  // First day for "new" schedules
   firstDays[NaN] = new Date("2021-10-20");
   firstDay = d3.timeDay(new Date(firstDays[currentYear]));
 })
@@ -35,10 +37,6 @@ const modalBody = document.getElementById('modalBody');
 const svgToggle1 = document.getElementById('svgToggle1');
 const svgToggle2 = document.getElementById('svgToggle2');
 
-// Extract the width and height of the window.
-const width = svgDiv.clientWidth;
-const height = svgDiv.clientHeight;
-
 const svg = d3.select(svgDiv).append('svg');
 const collapse = d3.select(collapseDiv).append('svg');
 
@@ -49,7 +47,6 @@ const formatDay = d => ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'][d];
 let teams = [];
 let teamAbbrv = {};
 let days = 0;
-let workingSetAll;
 let scheduleData;
 let finalSchedule;
 d3.csv('/resources/teams.csv').then(data => {
@@ -76,6 +73,11 @@ d3.csv('/resources/teams.csv').then(data => {
       .then(drawFilter);
 });
 
+/**
+ * Loads a new schedule from a csv file
+ * @param path Path to a csv schedule on the server
+ * @returns {PromiseLike<any> | Promise<any>} Promise for loading the csv to allow chaining
+ */
 function loadSchedule(path) {
   firstDay = d3.timeDay(new Date(firstDays[currentYear]));
   return d3.csv(path).then(data => {
@@ -92,7 +94,6 @@ function loadSchedule(path) {
     // Count number of games per day
     scheduleData = data;
     bindWins();
-    workingSetAll = new Set(data);
     finalSchedule = daySchedule(data, emptySet);
   });
 }
@@ -101,9 +102,20 @@ function bindWins() {
   scheduleData.forEach((d, i) => d.win = wins[i]);
 }
 
+/**
+ * Adds pseudo-select dropdowns
+ */
 function drawButtons() {
   const buttonSelect = d3.select(buttonDiv);
 
+  /**
+   * Adds a select button that toggles a div-based dropdown
+   * @param id Id of the HTML element to fill in
+   * @param data Options to populate the dropdown
+   * @param defaultValue Preset text of the button
+   * @param textFn Function to parse the data into text for the dropdowns
+   * @param updateFn Function to update the page when a selection is clicked
+   */
   function addButton(id, data, defaultValue, textFn, updateFn) {
     const select = buttonSelect.append('li').attr('class', 'nav-item');
     const button = select.append('button')
@@ -112,21 +124,6 @@ function drawButtons() {
         .attr('type', 'button')
         .attr('data-toggle', 'dropdown')
         .text(defaultValue);
-    /*
-    // Necessary if a button is moved into the svg element
-    .on("click", () => {
-        const rects = Array(...document.getElementsByTagName('rect'));
-        rects.forEach(d => {
-            d.style.pointerEvents = "none";
-        });
-        window.onclick = () => {
-            rects.forEach(d => {
-                d.style.pointerEvents = "all";
-            });
-            window.onclick = null;
-        }
-    });
-    */
 
     select.append('div')
         .attr('class', 'dropdown-menu')
@@ -149,7 +146,7 @@ function drawButtons() {
         .text(textFn);
   }
 
-  const defaultYear = urlYear ? urlYear : 'Select year';
+  const defaultYear = isNaN(parseInt(urlYear)) ? 'Select year' : urlYear;
   addButton('selectYear', ["New"].concat(d3.range(2013, 2019)), defaultYear, d => d, d => {
     currentYear = parseInt(d);
     if (isNaN(currentYear)) {
@@ -168,8 +165,12 @@ function drawButtons() {
   });
 }
 
-// Could save memory by separating date and value && speed up w/o filter() but
-// it's not significant
+/**
+ * Converts a schedule into a daily summary of the number of games that don't include specific teams
+ * @param data Schedule to convert
+ * @param teams List of teams to filter out of the games
+ * @returns {[]} Filtered schedule with daily count
+ */
 function daySchedule(data, teams) {
   let schedule = [];
   for (let i = 0; i < days; i++) {
@@ -186,6 +187,10 @@ function daySchedule(data, teams) {
   return schedule;
 }
 
+/**
+ * Draws the calendar visualization of the entire schedule
+ * @returns {jQuery|void} D3 selection of the calendar visualization
+ */
 function drawCalendar() {
   clear(svgDiv)
 
@@ -193,7 +198,6 @@ function drawCalendar() {
   let maxValue = Math.max(...values);
 
   const cellSize = 40;
-  const yearHeight = cellSize * 7;
   const season = svg.append('g');
   season.attr('transform', `translate(50, ${cellSize * 1.5})`)
 
@@ -222,6 +226,7 @@ function drawCalendar() {
       .attr('data-target', '#scheduleModal')
       .on('click',
           data => {
+            // Populated the modal box with the games played that day
             while (modalBody.firstChild) {
               modalBody.removeChild(modalBody.lastChild);
             }
@@ -253,15 +258,16 @@ function drawCalendar() {
       .append('title')
       .text(d => `${formatDate(d.date)}: ${d.value}`);
 
-  // Stretch node for overflow
   stretch(svg);
 
   return season;
 }
 
-/** @param {D3 selection} schedule Selection to update */
+/**
+ * Draws the filter box to toggle which teams' games are shown
+ * @param schedule D3 selection to apply the filter to
+ */
 function drawFilter(schedule) {
-  let workingSet = new Set(workingSetAll);
   let tmpSchedule = daySchedule(scheduleData, emptySet);
   let teamSchedule = scheduleData.filter(
       d => (d.team1 === currentTeam.abbrv || d.team2 === currentTeam.abbrv));
@@ -272,6 +278,7 @@ function drawFilter(schedule) {
 
   // Get logo files
   const rowLen = 6;
+  // Filter 'toggle' buttons
   const categories = teams.map(t => {
     return {
       abbrv: t['abbrv'], src: `/resources/logos/${t['name']}.png`,
@@ -293,7 +300,12 @@ function drawFilter(schedule) {
       .attr('height', imageWidth)
       .on('click', legendClick);
 
-  // Handle filtering for each schedule variant
+  /**
+   * Handle filtering for the schedule variants
+   * @param data Data bound to the filter buttons
+   * @param i Index of the button clicked
+   * @param nodes List of all the filter buttons
+   */
   function legendClick(data, i, nodes) {
     if (!isActive(svgToggle1) && data.abbrv === currentTeam.abbrv) {
       // Don't disable all the teams
@@ -311,32 +323,6 @@ function drawFilter(schedule) {
       tmpSchedule = daySchedule(scheduleData, filterTeams);
       let max = 0;
       tmpSchedule.forEach(day => max = Math.max(max, day.value))
-
-      /*
-      // Cheaper but more complex to catch all cases
-      const change = data.selected ? g => {
-           if (workingSet.has(g)) {
-               return false
-           } else {
-               return workingSet.add(g);
-           }
-       } : workingSet.delete
-       const boundChange = change.bind(workingSet);
-
-       // "Dirty" indices
-       const teamArr = new Array()
-       scheduleData.forEach(g => {
-           if ((g.team1 === data.abbrv || g.team2 === data.abbrv) &&
-      boundChange(g)) { teamArr.push(g)
-           }
-       });
-       const teamDays = teamArr.map(g => Object.assign(tmpSchedule[g.day]));
-       // Update number of games per day
-       data.selected ? teamDays.forEach(g => g.value++) : teamDays.forEach(g =>
-      g.value--); let max = 0 for (let day in teamDays) { max = Math.max(max,
-      teamDays[day].value);
-       }
-       */
 
       colorFn.domain([0, max + 1])
 
@@ -367,6 +353,10 @@ function drawFilter(schedule) {
   stretch(collapse);
 }
 
+/**
+ * Draws the match visualization for the current team's schedule
+ * @returns {jQuery|void} D3 selection of the visualization
+ */
 function drawTeamSchedule() {
   clear(svgDiv);
   const teamSchedule = scheduleData.filter(
@@ -425,6 +415,11 @@ function drawTeamSchedule() {
   return schedule;
 }
 
+/**
+ * Switches between visualizations
+ * @param e Click event
+ * @returns {boolean} Was the click valid
+ */
 function swapCalendar(e) {
   if (isActive(svgToggle1)) {
     if (e.target.id === 'svgToggle1') {
@@ -439,8 +434,13 @@ function swapCalendar(e) {
     const season = drawCalendar()
     drawFilter(season);
   }
+
+  return true;
 }
 
+/**
+ * Redraws the current visualization
+ */
 function redraw() {
   if (isActive(svgToggle1)) {
     const season = drawCalendar()
@@ -451,35 +451,68 @@ function redraw() {
   }
 }
 
-// Resizes the svg container to the size of its elements
+/**
+ * Resizes the svg container to the size of its elements
+ * @param svg D3 selection of an svg resize
+ */
 function stretch(svg) {
   const svgBox = svg.node().getBBox();
   svg.attr('width', svgBox.x + svgBox.width + svgBox.x)
       .attr('height', svgBox.y + svgBox.height + svgBox.y);
 }
 
+/**
+ * Remove all children of a node
+ * @param node Node to remove the children of
+ */
 function clear(node) {
   $(node.children[0]).empty();
 }
 
+/**
+ * Returns the other team playing in a game
+ * @param game Game with the two teams
+ * @param team Team you don't want returned
+ * @returns {*} The other team playing in a game
+ */
 function neqTeam(game, team) {
   return isHome(game, team) ? game.team2 : game.team1
 }
 
+/**
+ * Checks whether the given team is home or away
+ * @param game Game to check
+ * @param team Team to get the status of
+ * @returns {boolean} True if home, false if away
+ */
 function isHome(game, team) {
   return game.team1 === team.abbrv;
 }
 
+/**
+ * Checks if the specified team won the game
+ * @param game Game to check
+ * @param team Team to check whether they won the game
+ * @returns {*} True if 'team' won, false if 'team' lost
+ */
 function isWinner(game, team) {
   return isHome(game, team) ? game.win : !game.win;
 }
 
+/**
+ * Checks whether an element has the class 'active'
+ * @param ele Element to check
+ * @returns {boolean} True if 'ele' has class 'active', else false
+ */
 function isActive(ele) {
   return ele.classList.contains('active')
 }
 
-// Call's the ML model
+/**
+ * Calls the ML model on all of the current team's matches
+ */
 function simulateAll() {
+  // Switch to the correct visualization if necessary
   if (!isActive(svgToggle2)) {
     svgToggle2.click();
   }
