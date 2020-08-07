@@ -8,10 +8,12 @@ In terms of why we (developers Diego Escobedo, Brandon Jones, and Jeremy Weiss) 
 ## Build
 > Brandon Jones
 
+This feature allows a user to search for an NBA player and select what year you want their stats to come from. Using the charts api, when the players are added to the team their stats are added to a stacked bar graph. After the team is created the, it can be sent the schedule part of the website and then the team's games can be predicted using the simulate feature. 
+
 ## Schedule
 > Jeremy Weiss
 
-We used Google's OR-Tools to create the models and Gurobi to solve them. Other solvers may be very slow, or may not even be able to solve the problem.
+We used Google's or-tools to create the models and Gurobi to solve them. Other solvers may be very slow, or may not even be able to solve the problem.
 
 An overview of NBA scheduling can be found [here](https://www.nbastuffer.com/analytics101/how-the-nba-schedule-is-made/).
 
