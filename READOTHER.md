@@ -89,8 +89,43 @@ By simply assigning games to weeks instead of days, we could speedup the runtime
  &(2) && \min \, \max_{t \in \mathcal{T}}\sum_{w \in W}z_t^w
 \end{align*}
 
-We can convert a weekly schedule into a daily schedule through edge coloring. For each week, let every team be a vertex in the graph, and create an edge between two vertices if the teams play a match against each other that week. Since home teams do not play matches against other home teams and away teams do not play matches against other away teams, we have a partition of the vertices s.t. no edge exists within a partition. [Erdős & Wilson (1977)](https://www.renyi.hu/~p_erdos/1977-20.pdf) showed that all bipartite graphs have a chromatic index equal to its maximum degree. Each team is limited to 4 games a week, so the maximum degree is 4 and the games can all be scheduled with 4 days every week. However, this schedule would again not be very realistic. If we use all 7 colors instead of minimizing the number of colors used, it turns out any algorithm assigns colors based on their availability will always find a feasible coloring.
+We can convert a weekly schedule into a daily schedule through edge coloring. For each week, let every team be a vertex in the graph, and create an edge between two vertices if the teams play a match against each other that week. Since home teams do not play matches against other home teams and away teams do not play matches against other away teams, we have a partition of the vertices s.t. no edge exists within a partition. [Erdős & Wilson (1977)](https://www.renyi.hu/~p_erdos/1977-20.pdf) showed that all bipartite graphs have a chromatic index equal to its maximum degree. Each team is limited to 4 games a week, so the maximum degree is 4 and the games can all be scheduled with 4 days every week. However, this schedule would again not be very realistic. If we use all 7 colors instead of minimizing the number of colors used, it turns out any algorithm that assigns colors based on their availability will always find a feasible coloring.
 
 Proof:
 
-Let $G = (V, E)$ be the graph for an arbitrary week. We define a color $c$ to be "adjacent" to a vertex $v$ if $v$ is incident to an edge that is colored by $c$. By way of contradiction, suppose that we are coloring an edge $e = (u ,t)$ and there are no available colors. It must be the case that there are seven distinct colors adjacent to $u$ and $t$ collectively. However, the maximum degree in $G$ is 4, so $u$ and $t$ can be incident to at most 3 other edges excluding $e$. $u$ and $t$ together can only only be adjacent to 6 distinct colors. Since we have seven colors available, we reach a contradiction and conclude that an algorithm will always find a coloring.
+Let $G = (V, E)$ be the graph for an arbitrary week. We define a color $c$ to be "adjacent" to a vertex $v$ if $v$ is incident to an edge that is colored by $c$. By way of contradiction, suppose that we are coloring an edge $e = (u ,t)$ and there are no available colors. It must be the case that there are seven distinct colors adjacent to $u$ and $t$ collectively. However, the maximum degree in $G$ is 4, so $u$ and $t$ can be incident to at most 3 other edges excluding $e$. $u$ and $t$ together can only be adjacent to 6 distinct colors. Since we are able to use seven colors, there will always be a color available. We reach a contradiction and conclude that an algorithm will always find a coloring.
+
+The feasible solution took 84s to solve, but with the objective the runtime was only 3 hours. If we remove the constraint that each team needs to be only home or only away for a week (constraints 2-3), we can bring the runtime for the feasible solution down to 0.3s and the runtime for the objective to 3 minutes.
+
+<h3>Symmetry & Preprocessing</h3>
+One possible way to further reduce runtime would be to solve the schedule symmetrically. We solve the same problem for half of the games using only the first half of the season, then we can just mirror the first half onto the second half, changing home games to away and vice versa. Doing so would satisfy all of the original constraints as long as the $L_{tu} = U_{tu}$ for all $t, u \in \mathcal{T}$. Unfortunately, one of constraints requires each team to play 3 games against 4 of the in-conference, out-of-division teams. In that case $L_{tu} = 1$ but $U_{tu} = 2$, violating the symmetry condition.
+
+Since MIPs are NP-Hard, cutting the search space in half should reduce the runtime considerably. Instead of simply copying the games from the first half to the second half, we could first solve a preprocessing problem where we could fix the teams which play 3 games agianst each other and which halves they play 2 games in. Passing this to the "Weekly" solver, we could solve the problem twice over half the search space and still find an optimal solution. The preprocessing was never finished, but the model would look something similar to this:
+
+<h5>Data and Variables</h5>
+\begin{align*}
+  \mathcal{T} &:= && \{\text{teams}\} \\
+  \mathcal{C}_t &:= && \{\text{teams in the same conference as team $t$ but in different divisions}\} \\
+  x_{tu}  &:=&&
+    \begin{cases}
+      1 & \text{if team $t$ plays against team $u$ 3 times}\\
+      0 & \text{otherwise}
+    \end{cases} \\
+  y_{tu}  &:=&&
+    \begin{cases}
+      1 & \text{if team $t$ plays 2 home games against team $u$}\\
+      0 & \text{otherwise}
+    \end{cases} \\
+  z_{tu} & :=&&
+  \begin{cases}
+      1 & \text{if team $t$ plays 2 games against team $u$ in the first half}\\
+      0 & \text{otherwise}
+    \end{cases}
+\end{align*}
+
+<h5>Constraints</h5>
+\begin{align*}
+ &(1) \hspace{3ex} \forall t \in \mathcal{T}:&& \sum_{u \in \mathcal{C}_t} x_{ut} = 4 \\
+ &(2) \hspace{3ex} \forall t \in \mathcal{T}:&& \sum_{u \in \mathcal{C}_t} y_{ut} = 2 \\
+ &(3) \hspace{3ex} \forall t \in \mathcal{T}:&& \sum_{u \in \mathcal{C}_t} z_{ut} = 2 \\
+\end{align*}
