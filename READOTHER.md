@@ -3,7 +3,7 @@ We used Google's or-tools to create the models and Gurobi to solve them. Other s
 
 An overview of NBA scheduling can be found [here](https://www.nbastuffer.com/analytics101/how-the-nba-schedule-is-made/).
 
-<h3>First formulation: Daily ([solver.py](scheduler/solver.py))</h3>
+<h3>First formulation: Daily ([solver.py](./scheduler/solver.py))</h3>
 
 <h5>Data and Variables</h5>
 \begin{align*}
@@ -98,7 +98,8 @@ Let $G = (V, E)$ be the graph for an arbitrary week. We define a color $c$ to be
 The feasible solution took 84s to solve, but with the objective the runtime was only 3 hours. If we remove the constraint that each team needs to be only home or only away for a week (constraints 2-3), we can bring the runtime for the feasible solution down to 0.3s and the runtime for the objective to 3 minutes.
 
 <h3>Symmetry & Preprocessing</h3>
-One possible way to further reduce runtime would be to solve the schedule symmetrically. We solve the same problem for half of the games using only the first half of the season, then we can just mirror the first half onto the second half, changing home games to away and vice versa. Doing so would satisfy all of the original constraints as long as $L_{tu} = U_{tu}$ for all $t, u \in \mathcal{T}$. Unfortunately, one of constraints requires each team to play 3 games against 4 of the in-conference, out-of-division teams. In that case $L_{tu} = 1$ but $U_{tu} = 2$, violating the symmetry condition.
+One possible way to further reduce runtime would be to solve the schedule symmetrically. We solve the same problem for half of the games using only the first half of the season, then we can just mirror the first half onto the second half, changing home games to away and vice versa. Doing so would satisfy all of the original constraints as long as $$L_{tu} = U_{tu}, \; \forall t, u \in \mathcal{T}$$
+Unfortunately, one of constraints requires each team to play 3 games against 4 of the in-conference, out-of-division teams. In that case $L_{tu} = 1$ but $U_{tu} = 2$, violating the symmetry condition.
 
 Since MIPs are NP-Hard, cutting the search space in half should reduce the runtime considerably. Instead of simply copying the games from the first half to the second half, we could first solve a preprocessing problem where we could fix the teams which play 3 games agianst each other and which halves they play 2 games in. Passing this to the "Weekly" solver, we could solve the problem twice over half the search space and still find an optimal solution. The preprocessing was never finished, but the model would look something similar to this:
 
