@@ -3,7 +3,7 @@ We used Google's or-tools to create the models and Gurobi to solve them. Other s
 
 An overview of NBA scheduling can be found [here](https://www.nbastuffer.com/analytics101/how-the-nba-schedule-is-made/).
 
-<h3>First formulation: Daily ([solver.py](https://github.com/googleinterns/step108-2020/blob/svgs/scheduler/solver.py))</h3>
+<h3>First formulation: Daily ([solver.py](scheduler/solver.py))</h3>
 
 <h5>Data and Variables</h5>
 \begin{align*}
@@ -49,3 +49,28 @@ An overview of NBA scheduling can be found [here](https://www.nbastuffer.com/ana
 Our first approach was fairly naive—we just wanted to to see if we could solve this problem. We initially wanted to minimize travel cost, so without going through the hassle of collecting data on every team's home location, we decided to encode the cost as: any team that travels to or from an away game adds +1 to the cost. Since each team must play 41 away games, there is a fixed cost of 41 that we can ignore. Thus, minimizing the cost in this form is equivalent to minimizing the number of times each team travels from a home game to an away game and vice versa. To add "fairness," we decided to minimize the most expensive team instead of minimizing the sum of the teams' costs.
 
 The feasibile solution took 30s to solve, but with the objective it tooks 70 hours. There is likely a bug in the encoding of the objective, as the objective value of 1 didn't match up with the number of times teams were switching between home and away.
+
+<h3>Second formulation: Weekly</h3>
+After looking at the schedule created by our first formulation, we realized that minimizing the travel cost our way resulted in very wonky schedules. Teams were, for the most part, playing the first half of their games home/away and the second half away/home. This didn't really make sense for an NBA schedule, and the runtime with the objective was too long. If we wanted to have an online solve, the runtime couldn't be more than a few minutes let alone a few days.
+
+By simply assigning games to weeks instead of days, we could speedup the runtime considerably.
+
+<h5>New Variables</h5>
+\begin{align*}
+  x_t^w  &:=&&
+    \begin{cases}
+      1 & \text{if team is home for week w}\\
+      0 & \text{otherwise}
+    \end{cases} \\
+  y_t^w &:=&&
+    \begin{cases}
+      1 & \text{if team $t$ plays team $u$ in week $w$ when $t$ is home}\\
+      0 & \text{otherwise}
+    \end{cases} \\
+  z_t^w &:=&& \begin{cases}
+      1 & \text{if team $t$ plays 4 games in week $w$}\\
+      0 & \text{otherwise}
+    \end{cases} \\
+\end{align*}
+
+<h5>Constraints</h5>
