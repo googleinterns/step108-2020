@@ -1,6 +1,7 @@
 <h1>Scheduling</h1>
 
-<h3>First formulation: Daily [solver.py](https://github.com/googleinterns/step108-2020/blob/svgs/scheduler/solver.py)</h3>
+<h3>First formulation: Daily</h3>
+[solver.py](https://github.com/googleinterns/step108-2020/blob/svgs/scheduler/solver.py)
 
 <h5>Data and Variables</h5>
 <p align="center"><img alt="\begin{align*}&#10;  \mathcal{T} &amp;:= &amp;&amp; \{\text{teams}\} \\&#10;  \mathcal{N} &amp;:= &amp;&amp; \{\text{total days}\} \\&#10;  W &amp; := &amp;&amp; \{\text{total weeks}\} \\&#10;  W_n &amp; := &amp;&amp; \{\text{days in week $n$}\} \\&#10;  L_{tu} &amp;:=&amp;&amp; \text{The minimum number of times $t$ plays $u$ at home} \\&#10;  U_{tu} &amp;:=&amp;&amp; \text{The maximum number of times $t$ plays $u$ at home} \\&#10;  x_{tu}^i &amp;:=&amp;&amp;&#10;    \begin{cases}&#10;      1 &amp; \text{if team $t$ plays a home game against team $u$ on day $i$}\\&#10;      0 &amp; \text{otherwise}&#10;    \end{cases}       &#10;\end{align*}" src="https://cdn.jsdelivr.net/gh/googleinterns/step108-2020@svgs/svgs/52cdc5f2722d6ba285bcd96eb657803f.svg" align="middle" width="545.9145285pt" height="197.42520104999997pt"/></p>
