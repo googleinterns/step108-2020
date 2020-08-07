@@ -18,7 +18,7 @@ Our first approach was fairly naive—we just wanted to to see if we could solve
 
 The feasibile solution took 30s to solve, but with the objective it tooks 70 hours. There is likely a bug in the encoding of the objective, as the objective value of 1 didn't match up with the number of times teams were switching between home and away.
 
-<h3>Second formulation: Weekly</h3>
+<h3>Second formulation: Weekly ([solver_v2.py](scheduler/solver_v2.py))</h3>
 After looking at the schedule created by our first formulation, we realized that minimizing the travel cost our way resulted in very wonky schedules. Teams were, for the most part, playing the first half of their games home/away and the second half away/home. This didn't really make sense for an NBA schedule, and the runtime with the objective was too long. If we wanted to have an online solve, the runtime couldn't be more than a few minutes let alone a few days.
 
 By simply assigning games to weeks instead of days, we could speedup the runtime considerably.
