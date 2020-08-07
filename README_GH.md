@@ -3,7 +3,7 @@ We used Google's or-tools to create the models and Gurobi to solve them. Other s
 
 An overview of NBA scheduling can be found [here](https://www.nbastuffer.com/analytics101/how-the-nba-schedule-is-made/).
 
-<h3>First formulation: Daily [source](scheduler/solver.py)</h3>
+<h3>First formulation: Daily ([solver.py](./scheduler/solver.py))</h3>
 
 <h5>Data and Variables</h5>
 <p align="center"><img alt="\begin{align*}&#10;  \mathcal{T} &amp;:= &amp;&amp; \{\text{teams}\} \\&#10;  \mathcal{N} &amp;:= &amp;&amp; \{\text{total days}\} \\&#10;  W &amp; := &amp;&amp; \{\text{total weeks}\} \\&#10;  W_n &amp; := &amp;&amp; \{\text{days in week $n$}\} \\&#10;  L_{tu} &amp;:=&amp;&amp; \text{minimum number of times $t$ plays $u$ at home} \\&#10;  U_{tu} &amp;:=&amp;&amp; \text{maximum number of times $t$ plays $u$ at home} \\&#10;  x_{tu}^i  &amp;:=&amp;&amp;&#10;    \begin{cases}&#10;      1 &amp; \text{if team $t$ plays a home game against team $u$ on day $i$}\\&#10;      0 &amp; \text{otherwise}&#10;    \end{cases} \\&#10;    y_t^i &amp;:=&amp;&amp;&#10;    \begin{cases}&#10;      1 &amp; \text{if team $t$ is home on day $i$}\\&#10;      0 &amp; \text{otherwise}&#10;    \end{cases} \\&#10;    z_t^i &amp;:=&amp;&amp; \text{cost paid by team $t$ on day $i$} \\&#10;    v &amp;:=&amp;&amp; \text{max cost paid by any team}&#10;\end{align*}" src="svgs/739d01759e7f84a758eb6565a6723fb6.svg" align="middle" width="545.9145285pt" height="302.14670474999997pt"/></p>
