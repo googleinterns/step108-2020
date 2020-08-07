@@ -42,10 +42,11 @@ The feasible solution took 84s to solve, but with the objective the runtime was 
 
 <h3>Symmetry & Preprocessing</h3>
 One possible way to further reduce runtime would be to solve the schedule symmetrically. We solve the same problem for half of the games using only the first half of the season, then we can just mirror the first half onto the second half, changing home games to away and vice versa. Doing so would satisfy all of the original constraints as long as
-<p align="center"><img alt="$$\forall t, u \in \mathcal{T}: L_{tu} = U_{tu}$$" src="svgs/ac7f83d3c1302df5a951b82cc0ea49fb.svg" align="middle" width="149.3318013pt" height="14.611878599999999pt"/></p>
+<p align="center"><img alt="$$\forall t, u \in \mathcal{T}:\; L_{tu} = U_{tu}$$" src="svgs/8768b81c938d494f09abc784d5bb83db.svg" align="middle" width="153.89790075pt" height="14.611878599999999pt"/></p>
 Unfortunately, one of constraints requires each team to play 3 games against 4 of the in-conference, out-of-division teams. In that case
 <p align="center"><img alt="$$L_{tu} = 1 \neq 2 = U_{tu}$$" src="svgs/323c96bb18423b1d7df67832f76b9f4c.svg" align="middle" width="130.90007204999998pt" height="14.61184725pt"/></p>
 violating the symmetry condition.
+
 
 Since MIPs are NP-Hard, cutting the search space in half should reduce the runtime considerably. Instead of simply copying the games from the first half to the second half, we could first solve a preprocessing problem where we could fix the teams which play 3 games agianst each other and which halves they play 2 games in. Passing this to the "Weekly" solver, we could solve the problem twice over half the search space and still find an optimal solution. The preprocessing was never finished, but the model would look something similar to this:
 
