@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/search")
-
 public class SearchServlet extends HttpServlet {
 
     /**

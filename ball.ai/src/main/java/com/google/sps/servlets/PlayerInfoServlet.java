@@ -39,8 +39,8 @@ public class PlayerInfoServlet extends HttpServlet {
                 double steals = Double.parseDouble(record.get("STL"));
                 double blocks = Double.parseDouble(record.get("BLK"));
                 int year = Integer.parseInt(record.get("SEASON"));
-                String ID = name + year;
-                team.putIfAbsent(ID, new Player(name, points, assists, rebounds, steals, year, blocks));
+                String id = name + year;
+                team.putIfAbsent(id, new Player(name, points, assists, rebounds, steals, year, blocks));
             }
             Gson gson = new Gson();
             response.setContentType("application/json;");
