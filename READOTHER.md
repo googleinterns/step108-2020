@@ -29,11 +29,11 @@ An overview of NBA scheduling can be found [here](https://www.nbastuffer.com/ana
 
 <h5>Feasibility Constraints</h5>
 \begin{align*}
- &(1) \hspace{3ex} \forall t \in \mathcal{T}:&& \sum_{i \in w} \sum_{u \in \mathcal{T}} (x_{ut}^i + x_{tu}^i) \leq 4 \\
+ &(1) \hspace{3ex} \forall w \in W, \; \forall t \in \mathcal{T}:&& \sum_{i \in w} \sum_{u \in \mathcal{T}} (x_{ut}^i + x_{tu}^i) \leq 4 \\
  &(2) \hspace{3ex} \forall i \in \mathcal{N}, \; \forall t \in \mathcal{T}:&& \sum_{u \in \mathcal{T}} (x_{ut}^i + x_{tu}^i) \leq 1 \\
  &(3) \hspace{3ex} \forall u, t \in \mathcal{T} \text{ s.t. } u \neq t:&& \hspace{-6ex} L_{ut} \leq \sum_{i \in \mathcal{N}} x_{ut}^i \leq U_{ut} \\
  &(4) \hspace{3ex} \forall u \in \mathcal{T}:&& \sum_{i \in \mathcal{N}} \sum_{t \in \mathcal{T}} x_{tu}^i \leq 41 \\
- &(5) \hspace{3ex} \forall t \in \mathcal{T}:&& \sum_{i \in \mathcal{N}} \sum_{u \in \mathcal{T}} x_{tu}^i  41 \\
+ &(5) \hspace{3ex} \forall t \in \mathcal{T}:&& \sum_{i \in \mathcal{N}} \sum_{u \in \mathcal{T}} x_{tu}^i \leq 41 \\
 \end{align*}
 
 <h5>Objective Constraints</h5>
@@ -73,4 +73,12 @@ By simply assigning games to weeks instead of days, we could speedup the runtime
     \end{cases} \\
 \end{align*}
 
-<h5>Constraints</h5>
+<h5>Feasibility Constraints</h5>
+\begin{align*}
+ &(1) \hspace{3ex} \forall w \in W, \; \forall t \in \mathcal{T}:&& \sum_{u \in \mathcal{T}} (x_{ut}^w + x_{tu}^w) \leq 4 \\
+ &(2) \hspace{3ex} \forall t \in \mathcal{T}: && y_{tu}^w \leq x_t^w \\
+ &(3) \hspace{3ex} \forall t \in \mathcal{T}: && y_{ut}^w \leq 1 - x_t^w \\
+ &(4) \hspace{3ex} \forall u, t \in \mathcal{T} \text{ s.t. } u \neq t:&& \hspace{-6ex} L_{ut} \leq \sum_{w \in W} y_{ut}^w \leq U_{ut} \\
+ &(5) \hspace{3ex} \forall u \in \mathcal{T}:&& \sum_{i \in \mathcal{N}} \sum_{t \in \mathcal{T}} y_{tu}^i \leq 41 \\
+ &(6) \hspace{3ex} \forall t \in \mathcal{T}:&& \sum_{i \in \mathcal{N}} \sum_{u \in \mathcal{T}} y_{tu}^i \leq 41 \\
+\end{align*}
