@@ -88,3 +88,9 @@ By simply assigning games to weeks instead of days, we could speedup the runtime
  &(1) \hspace{3ex} \forall w \in W, \; \forall t \in \mathcal{T}:&& z_t^w \geq \sum_{u \in \mathcal{T}}(y_{tu}^w + y_{ut}^w ) -3 \\
  &(2) && \min \, \max_{t \in \mathcal{T}}\sum_{w \in W}z_t^w
 \end{align*}
+
+We can convert a weekly schedule into a daily schedule through edge coloring. For each week, let every team be a vertex in the graph, and create an edge between two vertices if the teams play a match against each other that week. Since home teams do not play matches against other home teams and away teams do not play matches against other away teams, we have a partition of the vertices s.t. no edge exists within a partition. [Erdős & Wilson (1977)](https://www.renyi.hu/~p_erdos/1977-20.pdf) showed that all bipartite graphs have a chromatic index equal to its maximum degree. Each team is limited to 4 games a week, so the maximum degree is 4 and the games can all be scheduled with 4 days every week. However, this schedule would again not be very realistic. If we use all 7 colors instead of minimizing the number of colors used, it turns out any algorithm assigns colors based on their availability will always find a feasible coloring.
+
+Proof:
+
+Let $G = (V, E)$ be the graph for an arbitrary week. We define a color $c$ to be "adjacent" to a vertex $v$ if $v$ is incident to an edge that is colored by $c$. By way of contradiction, suppose that we are coloring an edge $e = (u ,t)$ and there are no available colors. It must be the case that there are seven distinct colors adjacent to $u$ and $t$ collectively. However, the maximum degree in $G$ is 4, so $u$ and $t$ can be incident to at most 3 other edges excluding $e$. $u$ and $t$ together can only only be adjacent to 6 distinct colors. Since we have seven colors available, we reach a contradiction and conclude that an algorithm will always find a coloring.
