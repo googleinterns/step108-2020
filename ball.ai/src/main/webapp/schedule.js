@@ -1,11 +1,9 @@
-// ?players={}
-
 const url = new URL(window.location.href);
 const urlTeam = url.searchParams.get('team');
 const urlYear = url.searchParams.get('year');
 let players = new Array(5);
-for (let i in d3.range(5)) {
-  players[i] = url.searchParams.get(`player${i}`);
+for (let i = 0; i < 5; i++) {
+  players[i] = url.searchParams.get(`player${i+1}`);
 }
 
 const gamesPerTeam = 82;
@@ -16,8 +14,12 @@ let firstDays;
 let firstDay;
 d3.json('/resources/past_schedules/first_days.json').then(data => {
   firstDays = data;
+  firstDays[NaN] = new Date("2021-10-20");
   firstDay = d3.timeDay(new Date(firstDays[currentYear]));
 })
+
+let teamPlayers;
+d3.json('/resources/team_players.json').then(data => teamPlayers = data);
 
 let wins;
 function loadWins() {
@@ -53,17 +55,20 @@ let finalSchedule;
 d3.csv('/resources/teams.csv').then(data => {
   let validUrlTeam = false;
   data.forEach(d => {
-    if (urlTeam === d['team_abbrev']) {
+    if (urlTeam === d['team_nickname']) {
       validUrlTeam = true;
     }
-    teams.push({
+    let team = {
       'abbrv': d['team_abbrev'],
-      'name': `${d['team_name']} ${d['team_nickname']}`
-    });
-    teamAbbrv[d['team_abbrev']] = `${d['team_name']} ${d['team_nickname']}`;
+      'name': `${d['team_name']} ${d['team_nickname']}`,
+      'nickname': d['team_nickname'],
+      'id': parseInt(d['team_id'])
+    };
+    teams.push(team);
+    teamAbbrv[d['team_abbrev']] = team;
   });
-  currentTeam = validUrlTeam ? teams.filter(t => t.abbrv === urlTeam)[0] :
-                               new Object(teams[0]);
+  currentTeam = validUrlTeam ? teams.filter(t => t.nickname === urlTeam)[0] :
+      new Object(teams[0]);
   drawButtons();
   loadWins()
       .then(d => loadSchedule(`/resources/past_schedules/${currentYear}.csv`))
@@ -86,10 +91,14 @@ function loadSchedule(path) {
 
     // Count number of games per day
     scheduleData = data;
-    scheduleData.forEach((d, i) => d.win = wins[i]);
+    bindWins();
     workingSetAll = new Set(data);
     finalSchedule = daySchedule(data, emptySet);
   });
+}
+
+function bindWins() {
+  scheduleData.forEach((d, i) => d.win = wins[i]);
 }
 
 function drawButtons() {
@@ -98,11 +107,11 @@ function drawButtons() {
   function addButton(id, data, defaultValue, textFn, updateFn) {
     const select = buttonSelect.append('li').attr('class', 'nav-item');
     const button = select.append('button')
-                       .attr('class', 'nav-link dropdown-toggle')
-                       .attr('id', id)
-                       .attr('type', 'button')
-                       .attr('data-toggle', 'dropdown')
-                       .text(defaultValue);
+        .attr('class', 'nav-link dropdown-toggle')
+        .attr('id', id)
+        .attr('type', 'button')
+        .attr('data-toggle', 'dropdown')
+        .text(defaultValue);
     /*
     // Necessary if a button is moved into the svg element
     .on("click", () => {
@@ -141,11 +150,17 @@ function drawButtons() {
   }
 
   const defaultYear = urlYear ? urlYear : 'Select year';
-  addButton('selectYear', d3.range(2013, 2019), defaultYear, d => d, d => {
+  addButton('selectYear', ["New"].concat(d3.range(2013, 2019)), defaultYear, d => d, d => {
     currentYear = parseInt(d);
-    loadWins()
-        .then(() => loadSchedule(`/resources/past_schedules/${d}.csv`))
-        .then(redraw);
+    if (isNaN(currentYear)) {
+      d3.json("randomSchedule")
+          .then(loadSchedule)
+          .then(redraw);
+    } else {
+      loadWins()
+          .then(() => loadSchedule(`/resources/past_schedules/${d}.csv`))
+          .then(redraw);
+    }
   });
   addButton('selectTeam', teams, currentTeam.name, t => t.name, d => {
     currentTeam = d;
@@ -163,9 +178,9 @@ function daySchedule(data, teams) {
     schedule.push({
       'date': date,
       'value': data.filter(
-                       d => d.day === i && !teams.has(d.team1) &&
-                           !teams.has(d.team2))
-                   .length
+          d => d.day === i && !teams.has(d.team1) &&
+              !teams.has(d.team2))
+          .length
     });
   }
   return schedule;
@@ -173,6 +188,7 @@ function daySchedule(data, teams) {
 
 function drawCalendar() {
   clear(svgDiv)
+
   const values = finalSchedule.map(d => d.value);
   let maxValue = Math.max(...values);
 
@@ -259,7 +275,7 @@ function drawFilter(schedule) {
   const categories = teams.map(t => {
     return {
       abbrv: t['abbrv'], src: `/resources/logos/${t['name']}.png`,
-          selected: true
+      selected: true
     }
   });
 
@@ -288,7 +304,7 @@ function drawFilter(schedule) {
     data.selected = !selected;
     nodes[i].style.opacity = data.selected ? "1" : "0.2";
     data.selected ? filterTeams.delete(data.abbrv) :
-                    filterTeams.add(data.abbrv);
+        filterTeams.add(data.abbrv);
 
     if (isActive(svgToggle1)) {
       // Season schedule
@@ -355,7 +371,7 @@ function drawTeamSchedule() {
   clear(svgDiv);
   const teamSchedule = scheduleData.filter(
       d => d.team1 === currentTeam.abbrv || d.team2 === currentTeam.abbrv);
-  const winColor = game => isWinner(game, currentTeam) ? 'green' : 'red';
+  const winColor = isNaN(currentYear) ? "none" : game => isWinner(game, currentTeam) ? 'green' : 'red';
   const rows = 4;
   const baseCellSize = 40;
   const cellSize = baseCellSize * 7 / rows;
@@ -363,12 +379,12 @@ function drawTeamSchedule() {
   schedule.attr('transform', `translate(50, ${baseCellSize * 1.4})`)
 
   schedule.append('text')
-      .attr('x', 50)
+      .attr('x', 75)
       .attr('y', -10)
       .attr('text-anchor', 'end')
       .attr('font-size', 16)
       .attr('font-weight', 550)
-      .text(currentTeam.abbrv);
+      .text(currentTeam.name);
 
   schedule.append('g')
       .selectAll('image')
@@ -376,7 +392,7 @@ function drawTeamSchedule() {
       .join('image')
       .attr(
           'xlink:href',
-          d => `/resources/logos/${teamAbbrv[neqTeam(d, currentTeam)]}.png`)
+          d => `/resources/logos/${teamAbbrv[neqTeam(d, currentTeam)].name}.png`)
       .attr('width', cellSize - 1.5)
       .attr('height', cellSize - 1.5)
       .attr(
@@ -460,4 +476,26 @@ function isWinner(game, team) {
 
 function isActive(ele) {
   return ele.classList.contains('active')
+}
+
+// Call's the ML model
+function simulateAll() {
+  if (!isActive(svgToggle2)) {
+    svgToggle2.click();
+  }
+
+  svg.selectAll('rect')
+      .attr('stroke', "none")
+      .each((game, i, nodes) => {
+        let team1 = teamAbbrv[game.team1];
+        let team2 = teamAbbrv[game.team2];
+        let awaitProb = isHome(game, currentTeam) ?
+            simulate_for_jeremy(players, teamPlayers[team2.id]) :
+            simulate_for_jeremy(teamPlayers[team1.id], players);
+        awaitProb.then(prob => {
+          const homeWin = Math.random() > prob;
+          const thisWin = isHome(game, currentTeam) ? homeWin : !homeWin;
+          nodes[i].style.stroke = thisWin ? "green" : "red";
+        });
+      });
 }
