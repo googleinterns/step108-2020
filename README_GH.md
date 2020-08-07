@@ -1,0 +1,1 @@
+<p align="center"><img alt="$$&#10;\frac{n!}{k!(n-k)!} = {n \choose k}&#10;$$" src="https://cdn.jsdelivr.net/gh/googleinterns/step108-2020@svgs/svgs/32737e0a8d5a4cf32ba3ab1b74902ab7.svg" align="middle" width="127.9847844pt" height="39.452455349999994pt"/></p>
