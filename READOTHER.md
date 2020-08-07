@@ -82,3 +82,9 @@ By simply assigning games to weeks instead of days, we could speedup the runtime
  &(5) \hspace{3ex} \forall u \in \mathcal{T}:&& \sum_{i \in \mathcal{N}} \sum_{t \in \mathcal{T}} y_{tu}^i \leq 41 \\
  &(6) \hspace{3ex} \forall t \in \mathcal{T}:&& \sum_{i \in \mathcal{N}} \sum_{u \in \mathcal{T}} y_{tu}^i \leq 41 \\
 \end{align*}
+
+<h5>Objective Constraints</h5>
+\begin{align*}
+ &(1) \hspace{3ex} \forall w \in W, \; \forall t \in \mathcal{T}:&& z_t^w \geq \sum_{u \in \mathcal{T}}(y_{tu}^w + y_{ut}^w ) -3 \\
+ &(2) && \min \, \max_{t \in \mathcal{T}}\sum_{w \in W}z_t^w
+\end{align*}
