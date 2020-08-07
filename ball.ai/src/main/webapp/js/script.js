@@ -1,14 +1,24 @@
 google.charts.load('current', {'packages':['bar']});
 
 const selectedPlayers = new Array();
+var playerInfo;
+var playerList;
 
 /**
- * @return object of players and lists of years they played
+ * gets a list of all players and the season they have played
  */
 async function getPlayers() {
   const response = await fetch('/search');
-  const players = await response.json();
-  return players;
+  playerList = await response.json();
+}
+
+/**
+ * get a map of all players and their stats
+ */
+async function getPlayerInfo(){
+  const response = await fetch('/playerInfo');
+  playerInfo = await response.json();
+  getPlayers();
 }
 
 /**
@@ -23,8 +33,7 @@ function getInput() {
  */
 async function search() {
   document.getElementById('list').innerHTML = '';
-  const players = await getPlayers();
-  const listPlayers = Object.keys(players);
+  const listPlayers = Object.keys(playerList);
   input = getInput();
   counter = 0;
   for (i = 0; i < listPlayers.length; i++){
@@ -42,8 +51,7 @@ async function search() {
  * creates an element of the players chosen from search bar
  */
 async function selectPlayer() {
-  const players = await getPlayers();
-  const playerInfo = new Map(Object.entries(players));
+  const playerInfo = new Map(Object.entries(playerList));
   input = getInput();
   document.getElementById('listPlayers').innerHTML = '';
   var player = document.getElementById('listPlayers');
@@ -140,9 +148,9 @@ function createPlayernode(name, imageId, playerid, position) {
   deleteButton.addEventListener('click',() => {
     player.remove();
     size = selectedPlayers.length;
-    for (i = 0; i < size ; i++) {
+    for (i = 0; i < selectedPlayers.length ; i++) {
       if (selectedPlayers[i].id == playerid) {
-        selectedPlayers[i].id = selectedPlayers[size-1].id;
+        selectedPlayers[i] = selectedPlayers[size-1];
         selectedPlayers.pop();
       }
     }
@@ -155,46 +163,44 @@ function createPlayernode(name, imageId, playerid, position) {
 
 //draws a chart of players selected by the user
 function drawChart() {
-  fetch('/playerInfo').then(response => response.json()).then((team) => {
-    const players = new Map(Object.entries(team));
-    var data = new google.visualization.DataTable();
-    var counter = 1;
-    //creates a data table of the selected players and their stats
-    for (i = 0; i < selectedPlayers.length; i++) {
-      if ( i == 0) {
-        data.addColumn('string', 'Stats');
-        data.addRows(5);
-        data.setCell(0, 0, 'PPG');
-        data.setCell(1, 0, 'AST');
-        data.setCell(2, 0, 'REB');
-        data.setCell(3, 0, 'STL');
-        data.setCell(4, 0, 'BLK');
-      }
-      if (players.has(selectedPlayers[i].id)) {
-        data.addColumn('number', players.get(selectedPlayers[i].id).name);
-        data.setCell(0, counter, players.get(selectedPlayers[i].id).points);
-        data.setCell(1, counter, players.get(selectedPlayers[i].id).assists);
-        data.setCell(2, counter, players.get(selectedPlayers[i].id).rebounds);
-        data.setCell(3, counter, players.get(selectedPlayers[i].id).steals);
-        data.setCell(4, counter, players.get(selectedPlayers[i].id).blocks);
-        counter++;
-      }
+  const players = new Map(Object.entries(playerInfo));
+  var data = new google.visualization.DataTable();
+  var counter = 1;
+  //creates a data table of the selected players and their stats
+  for (i = 0; i < selectedPlayers.length; i++) {
+    if ( i == 0) {
+      data.addColumn('string', 'Stats');
+      data.addRows(5);
+      data.setCell(0, 0, 'PPG');
+      data.setCell(1, 0, 'AST');
+      data.setCell(2, 0, 'REB');
+      data.setCell(3, 0, 'STL');
+      data.setCell(4, 0, 'BLK');
     }
+    if (players.has(selectedPlayers[i].id)) {
+      data.addColumn('number', players.get(selectedPlayers[i].id).name);
+      data.setCell(0, counter, players.get(selectedPlayers[i].id).points);
+      data.setCell(1, counter, players.get(selectedPlayers[i].id).assists);
+      data.setCell(2, counter, players.get(selectedPlayers[i].id).rebounds);
+      data.setCell(3, counter, players.get(selectedPlayers[i].id).steals);
+      data.setCell(4, counter, players.get(selectedPlayers[i].id).blocks);
+      counter++;
+    }
+  }
 
-    //the style of the chart created
-    var options = {
-      colors:['blue'],
-      width: 600,
-      height: 400,
-      legend: { position: 'top', maxLines: 3 },
-      bar: { groupWidth: '75%' },
-      isStacked: true,
-    };
+  //the style of the chart created
+  var options = {
+    colors:['blue'],
+    width: 600,
+    height: 400,
+    legend: { position: 'top', maxLines: 3 },
+    bar: { groupWidth: '75%' },
+    isStacked: true,
+  };
 
-    //creates a chart based on the data table and options
-    var chart = new google.charts.Bar(document.getElementById('chart-container'));
-    chart.draw(data, google.charts.Bar.convertOptions(options));
-  });
+  //creates a chart based on the data table and options
+  var chart = new google.charts.Bar(document.getElementById('chart-container'));
+  chart.draw(data, google.charts.Bar.convertOptions(options));
 }
 
 /**
@@ -233,22 +239,26 @@ function createTeam() {
  * adds 5 players to the team
  */
 function quickTeam() {
-  var derrick = createplayer('Derrick Rose', 2008, 'G');
-  var klay = createplayer('Klay Thompson', 2011, 'G');
-  var kevin = createplayer('Kevin Durant', 2018, 'F');
-  var tim = createplayer('Tim Duncan', 2015, 'F');
-  var joel = createplayer('Joel Embiid', 2016, 'C');
-  selectedPlayers.push(derrick);
-  selectedPlayers.push(klay);
-  selectedPlayers.push(kevin);
-  selectedPlayers.push(tim);
-  selectedPlayers.push(joel);
-  createPlayernode(derrick.name, 201565, derrick.id, 'PG');
-  createPlayernode(klay.name, 202691, klay.id, 'SG');
-  createPlayernode(kevin.name, 201142, kevin.id, 'SF');
-  createPlayernode(tim.name, 1495, tim.id, 'PF');
-  createPlayernode(joel.name, 203954, joel.id, 'C');
-  drawChart();
+  if (selectedPlayers.length == 0) {
+    var derrick = createplayer('Derrick Rose', 2008, 'G');
+    var klay = createplayer('Klay Thompson', 2011, 'G');
+    var kevin = createplayer('Kevin Durant', 2018, 'F');
+    var tim = createplayer('Tim Duncan', 2015, 'F');
+    var joel = createplayer('Joel Embiid', 2016, 'C');
+    selectedPlayers.push(derrick);
+    selectedPlayers.push(klay);
+    selectedPlayers.push(kevin);
+    selectedPlayers.push(tim);
+    selectedPlayers.push(joel);
+    createPlayernode(derrick.name, 201565, derrick.id, 'PG');
+    createPlayernode(klay.name, 202691, klay.id, 'SG');
+    createPlayernode(kevin.name, 201142, kevin.id, 'SF');
+    createPlayernode(tim.name, 1495, tim.id, 'PF');
+    createPlayernode(joel.name, 203954, joel.id, 'C');
+    drawChart();
+  } else {
+    alert('You can only use quick team if the team is empty');
+  }
 }
 
 /**
