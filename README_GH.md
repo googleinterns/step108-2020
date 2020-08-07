@@ -48,6 +48,7 @@ Unfortunately, one of constraints requires each team to play 3 games against 4 o
 violating the symmetry condition.
 
 
+
 Since MIPs are NP-Hard, cutting the search space in half should reduce the runtime considerably. Instead of simply copying the games from the first half to the second half, we could first solve a preprocessing problem where we could fix the teams which play 3 games agianst each other and which halves they play 2 games in. Passing this to the "Weekly" solver, we could solve the problem twice over half the search space and still find an optimal solution. The preprocessing was never finished, but the model would look something similar to this:
 
 <h5>Data and Variables</h5>
