@@ -10,6 +10,7 @@ In terms of why we (developers Diego Escobedo, Brandon Jones, and Jeremy Weiss) 
 
 ## Schedule
 > Jeremy Weiss
+
 We used Google's or-tools to create the models and Gurobi to solve them. Other solvers may be very slow, or may not even be able to solve the problem.
 
 An overview of NBA scheduling can be found [here](https://www.nbastuffer.com/analytics101/how-the-nba-schedule-is-made/).
